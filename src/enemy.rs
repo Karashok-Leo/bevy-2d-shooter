@@ -1,5 +1,6 @@
 use crate::animation::*;
 use crate::collision::Collider;
+use crate::damage::*;
 use crate::in_game::InGame;
 use crate::physics::*;
 use crate::player::Player;
@@ -14,9 +15,7 @@ use std::time::Duration;
 
 #[derive(Component)]
 #[require(InGame)]
-pub struct Enemy {
-    pub health: f32,
-}
+pub struct Enemy;
 
 pub struct EnemyPlugin;
 
@@ -28,9 +27,10 @@ impl Enemy {
         let sprite_index = Self::SPRITE_INDEXES.choose(&mut rng).unwrap();
         let animation_indices = AnimationIndices::from_length(*sprite_index as usize, 4);
         (
-            Enemy {
-                health: ENEMY_HEALTH,
-            },
+            Enemy,
+            Health::new(ENEMY_HEALTH),
+            DamageCooldown::new(Duration::from_secs_f32(ENEMY_DAMAGE_COOLDOWN)),
+            DamageFlash,
             physical_transform(Transform::from_xyz(x, y, SpriteOrder::Enemy.z_index())),
             Sprite::from_atlas_image(
                 texture_atlas.image.clone().unwrap(),
@@ -50,14 +50,25 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (
-                spawn_enemies.run_if(on_timer(Duration::from_secs_f32(ENEMY_SPAWN_INTERVAL))),
-                enemy_moving,
-                enemy_facing,
-                despawn_enemies,
-            )
-                .run_if(in_state(GameState::InGame)),
+            (enemy_facing, despawn_enemies).run_if(in_state(GameState::InGame)),
         );
+
+        if DEBUG {
+            app.add_systems(
+                Update,
+                draw_enemy_hurt_box.run_if(in_state(GameState::InGame)),
+            );
+            app.add_systems(OnEnter(GameState::InGame), spawn_dummy);
+        } else {
+            app.add_systems(
+                Update,
+                (
+                    spawn_enemies.run_if(on_timer(Duration::from_secs_f32(ENEMY_SPAWN_INTERVAL))),
+                    enemy_moving,
+                )
+                    .run_if(in_state(GameState::InGame)),
+            );
+        }
     }
 }
 
@@ -78,6 +89,41 @@ fn enemy_facing(
     for (transform, mut sprite) in enemy_query.iter_mut() {
         sprite.flip_x = player_transform.translation.x < transform.translation.x;
     }
+}
+
+fn spawn_dummy(
+    mut commands: Commands,
+    texture_atlas: Res<GlobalTextureAtlas>,
+    player_query: Query<&Transform, With<Player>>,
+) {
+    let Ok(player_transform) = player_query.get_single() else {
+        return;
+    };
+
+    let animation_indices = AnimationIndices::from_length(8, 4);
+
+    let player_pos = player_transform.translation.truncate();
+    commands.spawn((
+        Enemy,
+        Health::new(ENEMY_HEALTH * 100.0),
+        DamageCooldown::new(Duration::from_secs_f32(ENEMY_DAMAGE_COOLDOWN)),
+        DamageFlash,
+        physical_transform(Transform::from_xyz(
+            player_pos.y,
+            player_pos.y,
+            SpriteOrder::Enemy.z_index(),
+        )),
+        Sprite::from_atlas_image(
+            texture_atlas.image.clone().unwrap(),
+            TextureAtlas {
+                layout: texture_atlas.layout.clone().unwrap(),
+                index: animation_indices.first,
+            },
+        ),
+        animation_indices,
+        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+        Collider,
+    ));
 }
 
 fn spawn_enemies(
@@ -102,11 +148,12 @@ fn spawn_enemies(
     }
 }
 
-fn despawn_enemies(mut commands: Commands, enemy_query: Query<(Entity, &Enemy)>) {
-    for (entity, enemy) in enemy_query.iter() {
-        if enemy.health <= 0.0 {
-            commands.entity(entity).despawn_recursive();
+fn despawn_enemies(mut commands: Commands, enemy_query: Query<(Entity, &Health), With<Enemy>>) {
+    for (entity, health) in enemy_query.iter() {
+        if health.is_alive() {
+            continue;
         }
+        commands.entity(entity).despawn_recursive();
     }
 }
 
@@ -117,4 +164,14 @@ fn get_random_position_around(pos: Vec2) -> (f32, f32) {
     let x = pos.x + angle.cos() * radius;
     let y = pos.y + angle.sin() * radius;
     (x, y)
+}
+
+fn draw_enemy_hurt_box(mut gizmos: Gizmos, enemy_query: Query<&Transform, With<Enemy>>) {
+    for transform in enemy_query.iter() {
+        gizmos.circle_2d(
+            Isometry2d::from_translation(transform.translation.truncate()),
+            ENEMY_HURT_RADIUS,
+            Color::srgb(1.0, 0.0, 0.0),
+        );
+    }
 }

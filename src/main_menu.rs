@@ -36,17 +36,22 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent.spawn((
-                        text(&asset_server, "2D Shooter", 100.0),
-                        // box_shadow(),
-                        BackgroundColor::from(Color::BLACK.with_alpha(0.6)),
-                        Node {
-                            margin: UiRect::all(Val::Px(50.0)),
-                            align_items: AlignItems::Center,
-                            justify_content: JustifyContent::Center,
-                            ..default()
-                        },
-                    ));
+                    parent
+                        .spawn((
+                            text(&asset_server, "2D Shooter", 100.0),
+                            // box_shadow(),
+                            BackgroundColor::from(Color::BLACK.with_alpha(0.6)),
+                            Node {
+                                margin: UiRect::all(Val::Px(50.0)),
+                                align_items: AlignItems::Center,
+                                justify_content: JustifyContent::Center,
+                                ..default()
+                            },
+                        ))
+                        .with_child((
+                            text_bg(&asset_server, "2D Shooter", 104.0),
+                            ZIndex(1),
+                        ));
                     let button_node = Node {
                         width: Val::Px(150.0),
                         height: Val::Px(80.0),

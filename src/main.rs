@@ -6,6 +6,7 @@ use bevy_2d_shooter::animation::AnimatorPlugin;
 use bevy_2d_shooter::bullet::BulletPlugin;
 use bevy_2d_shooter::camera::FollowCameraPlugin;
 use bevy_2d_shooter::collision::CollisionPlugin;
+use bevy_2d_shooter::damage::DamagePlugin;
 use bevy_2d_shooter::enemy::EnemyPlugin;
 use bevy_2d_shooter::game_over::GameOverPlugin;
 use bevy_2d_shooter::gui::GuiPlugin;
@@ -13,7 +14,7 @@ use bevy_2d_shooter::gun::GunPlugin;
 use bevy_2d_shooter::in_game::InGamePlugin;
 use bevy_2d_shooter::input::InputHandlerPlugin;
 use bevy_2d_shooter::main_menu::MainMenuPlugin;
-use bevy_2d_shooter::overlay::OverlayPlugin;
+use bevy_2d_shooter::hud::HudPlugin;
 use bevy_2d_shooter::physics::PhysicsPlugin;
 use bevy_2d_shooter::player::PlayerPlugin;
 use bevy_2d_shooter::resource::ResourcePlugin;
@@ -45,12 +46,13 @@ fn main() {
             AnimatorPlugin,
             FollowCameraPlugin,
             (PlayerPlugin, GunPlugin, BulletPlugin, EnemyPlugin),
+            DamagePlugin,
             (
                 MainMenuPlugin,
                 InGamePlugin,
                 GameOverPlugin,
                 GuiPlugin,
-                OverlayPlugin,
+                HudPlugin,
             ),
             DebugUiPlugin,
         ))

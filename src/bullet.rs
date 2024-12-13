@@ -1,5 +1,5 @@
 use crate::collision::ColliderKdTree;
-use crate::enemy::Enemy;
+use crate::damage::*;
 use crate::in_game::InGame;
 use crate::physics::*;
 use crate::resource::GlobalTextureAtlas;
@@ -53,7 +53,11 @@ impl Plugin for BulletPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (despawn_bullets, handle_bullet_collision, bullet_moving)
+            (
+                bullet_moving,
+                despawn_bullets,
+                bullet_damage.in_set(DamagePhase::Post),
+            )
                 .run_if(in_state(GameState::InGame)),
         );
     }
@@ -76,21 +80,27 @@ fn despawn_bullets(
     }
 }
 
-fn handle_bullet_collision(
+fn bullet_damage(
     bullet_query: Query<&Transform, With<Bullet>>,
     tree: Res<ColliderKdTree>,
-    mut enemy_query: Query<&mut Enemy>,
+    mut event_writer: EventWriter<DamageEvent>,
 ) {
-    if bullet_query.is_empty() || enemy_query.is_empty() {
+    if bullet_query.is_empty() {
         return;
     }
 
     for bullet_transform in bullet_query.iter() {
         let pos = bullet_transform.translation;
-        for collider in tree.0.within_radius(&[pos.x, pos.y], 10.0) {
-            if let Ok(mut enemy) = enemy_query.get_mut(collider.entity) {
-                enemy.health -= BULLET_DAMAGE;
-            }
+        for collider in tree.0.within_radius(&[pos.x, pos.y], ENEMY_HURT_RADIUS) {
+            event_writer.send(DamageEvent {
+                target: collider.entity,
+                context: DamageContext {
+                    damage: BULLET_DAMAGE,
+                    damage_type: DamageType::Bullet.into(),
+                    attacker: None,
+                },
+                apply: true,
+            });
         }
     }
 }

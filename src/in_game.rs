@@ -1,4 +1,5 @@
 use crate::camera::InGameCamera;
+use crate::damage::Health;
 use crate::gun::Gun;
 use crate::player::Player;
 use crate::resource::*;
@@ -59,8 +60,12 @@ fn despawn_in_game(mut commands: Commands, in_game_query: Query<Entity, With<InG
     }
 }
 
-fn check_game_over(mut next_state: ResMut<NextState<GameState>>, player: Single<&Player>) {
-    if player.health <= 0.0 {
-        next_state.set(GameState::GameOver);
+fn check_game_over(
+    mut next_state: ResMut<NextState<GameState>>,
+    player: Single<&Health, With<Player>>,
+) {
+    if player.is_alive() {
+        return;
     }
+    next_state.set(GameState::GameOver);
 }

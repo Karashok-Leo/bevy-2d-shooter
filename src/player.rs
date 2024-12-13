@@ -1,5 +1,6 @@
 use crate::animation::*;
 use crate::collision::ColliderKdTree;
+use crate::damage::*;
 use crate::in_game::InGame;
 use crate::input::*;
 use crate::physics::*;
@@ -7,12 +8,12 @@ use crate::resource::*;
 use crate::state::GameState;
 use crate::*;
 use bevy::prelude::*;
+use bevy::time::common_conditions::on_timer;
+use std::time::Duration;
 
 #[derive(Component)]
 #[require(InGame)]
-pub struct Player {
-    pub health: f32,
-}
+pub struct Player;
 
 pub struct PlayerPlugin;
 
@@ -20,9 +21,10 @@ impl Player {
     pub fn new(texture_atlas: &Res<GlobalTextureAtlas>) -> impl Bundle {
         let animation_indices = AnimationIndices::from_length(0, 4);
         (
-            Player {
-                health: PLAYER_HEALTH,
-            },
+            Player,
+            Health::new(PLAYER_HEALTH),
+            DamageCooldown::new(Duration::from_secs_f32(PLAYER_DAMAGE_COOLDOWN)),
+            DamageFlash,
             physical_transform(Transform::from_xyz(0.0, 0.0, SpriteOrder::Player.z_index())),
             Sprite::from_atlas_image(
                 texture_atlas.image.clone().unwrap(),
@@ -41,8 +43,22 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (player_moving, player_facing, player_hurting).run_if(in_state(GameState::InGame)),
+            (
+                player_moving,
+                player_facing,
+                player_hurting
+                    .run_if(on_timer(Duration::from_secs_f32(0.5)))
+                    .in_set(DamagePhase::Post),
+            )
+                .run_if(in_state(GameState::InGame)),
         );
+
+        if DEBUG {
+            app.add_systems(
+                Update,
+                draw_player_hurt_box.run_if(in_state(GameState::InGame)),
+            );
+        }
     }
 }
 
@@ -71,16 +87,33 @@ fn player_facing(
     sprite.flip_x = cursor_position.0.x < transform.translation.x;
 }
 
-fn player_hurting(mut player_query: Query<(&Transform, &mut Player)>, tree: Res<ColliderKdTree>) {
-    let Ok((transform, mut player)) = player_query.get_single_mut() else {
+fn player_hurting(
+    mut player_query: Query<(Entity, &Transform), With<Player>>,
+    tree: Res<ColliderKdTree>,
+    mut event_writer: EventWriter<DamageEvent>,
+) {
+    let Ok((entity, transform)) = player_query.get_single_mut() else {
         return;
     };
     let pos = transform.translation;
 
-    for _collider in tree.0.within_radius(&[pos.x, pos.y], 5.0) {
-        player.health -= ENEMY_DAMAGE;
-        if player.health < 0.0 {
-            player.health = 0.0;
-        }
+    for collider in tree.0.within_radius(&[pos.x, pos.y], PLAYER_HURT_RADIUS) {
+        event_writer.send(DamageEvent {
+            target: entity,
+            context: DamageContext {
+                damage: ENEMY_DAMAGE,
+                damage_type: DamageType::Enemy.into(),
+                attacker: Some(collider.entity),
+            },
+            apply: true,
+        });
     }
+}
+
+fn draw_player_hurt_box(mut gizmos: Gizmos, player_query: Single<&Transform, With<Player>>) {
+    gizmos.circle_2d(
+        Isometry2d::from_translation(player_query.translation.truncate()),
+        PLAYER_HURT_RADIUS,
+        Color::srgb(1.0, 0.0, 0.0),
+    );
 }

@@ -3,15 +3,15 @@ pub mod bullet;
 pub mod camera;
 pub mod collision;
 pub mod config;
+pub mod damage;
 pub mod enemy;
 pub mod game_over;
 pub mod gui;
 pub mod gun;
-
+pub mod hud;
 pub mod in_game;
 pub mod input;
 pub mod main_menu;
-pub mod overlay;
 pub mod physics;
 pub mod player;
 pub mod resource;
