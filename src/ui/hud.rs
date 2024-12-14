@@ -1,9 +1,9 @@
-use crate::damage::*;
-use crate::in_game::InGame;
 use crate::state::*;
 use crate::ui::damage_popup::on_enemy_damaged;
 use crate::ui::debug_panel::*;
 use crate::ui::player_health_bar::*;
+use crate::world::damage::*;
+use crate::world::in_game::InGame;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;

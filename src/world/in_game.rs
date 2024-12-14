@@ -1,9 +1,9 @@
-use crate::camera::InGameCamera;
-use crate::damage::Health;
-use crate::gun::Gun;
-use crate::player::Player;
+use crate::camera::SmoothCamera;
 use crate::resource::*;
 use crate::state::GameState;
+use crate::world::damage::Health;
+use crate::world::gun::Gun;
+use crate::world::player::Player;
 use crate::*;
 use bevy::prelude::*;
 use rand::Rng;
@@ -11,6 +11,7 @@ use rand::Rng;
 #[derive(Component, Default)]
 pub struct InGame;
 
+#[derive(Default)]
 pub struct InGamePlugin;
 
 impl Plugin for InGamePlugin {
@@ -26,7 +27,7 @@ fn setup_world(
     texture_atlas: Res<GlobalTextureAtlas>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    commands.spawn(InGameCamera::new());
+    commands.spawn(SmoothCamera::new());
     commands
         .spawn(Player::new(&texture_atlas))
         .with_child(Gun::new(&texture_atlas));

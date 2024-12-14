@@ -1,7 +1,7 @@
-use crate::damage::Health;
-use crate::player::Player;
 use crate::resource::GlobalTextureAtlas;
 use crate::ui::bar::*;
+use crate::world::damage::Health;
+use crate::world::player::Player;
 use bevy::prelude::*;
 use bevy::ui::widget::NodeImageMode;
 

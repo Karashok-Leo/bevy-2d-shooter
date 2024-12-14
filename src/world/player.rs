@@ -1,11 +1,11 @@
 use crate::animation::*;
-use crate::collision::ColliderKdTree;
-use crate::damage::*;
-use crate::in_game::InGame;
 use crate::input::*;
 use crate::physics::*;
 use crate::resource::*;
 use crate::state::GameState;
+use crate::world::collision::ColliderKdTree;
+use crate::world::damage::*;
+use crate::world::in_game::InGame;
 use crate::*;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
@@ -15,6 +15,7 @@ use std::time::Duration;
 #[require(InGame)]
 pub struct Player;
 
+#[derive(Default)]
 pub struct PlayerPlugin;
 
 impl Player {

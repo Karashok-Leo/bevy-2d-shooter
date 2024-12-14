@@ -3,21 +3,14 @@
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_2d_shooter::animation::AnimatorPlugin;
-use bevy_2d_shooter::bullet::BulletPlugin;
-use bevy_2d_shooter::camera::FollowCameraPlugin;
-use bevy_2d_shooter::collision::CollisionPlugin;
-use bevy_2d_shooter::damage::DamagePlugin;
-use bevy_2d_shooter::enemy::EnemyPlugin;
-use bevy_2d_shooter::gun::GunPlugin;
-use bevy_2d_shooter::in_game::InGamePlugin;
+use bevy_2d_shooter::camera::SmoothCameraPlugin;
 use bevy_2d_shooter::input::InputHandlerPlugin;
 use bevy_2d_shooter::physics::PhysicsPlugin;
-use bevy_2d_shooter::player::PlayerPlugin;
 use bevy_2d_shooter::resource::ResourcePlugin;
 use bevy_2d_shooter::state::GameState;
+use bevy_2d_shooter::ui::UIPlugins;
+use bevy_2d_shooter::world::WorldPlugins;
 use bevy_2d_shooter::*;
-use bevy_dev_tools::ui_debug_overlay::DebugUiPlugin;
-use bevy_2d_shooter::ui::UiPlugins;
 
 fn main() {
     App::new()
@@ -39,14 +32,10 @@ fn main() {
             ResourcePlugin,
             InputHandlerPlugin,
             PhysicsPlugin,
-            CollisionPlugin,
             AnimatorPlugin,
-            FollowCameraPlugin,
-            (PlayerPlugin, GunPlugin, BulletPlugin, EnemyPlugin),
-            UiPlugins,
-            DamagePlugin,
-            InGamePlugin,
-            DebugUiPlugin,
+            SmoothCameraPlugin,
+            WorldPlugins,
+            UIPlugins,
         ))
         .init_state::<GameState>()
         .insert_resource(ClearColor(Color::srgb_u8(

@@ -1,7 +1,7 @@
-use crate::damage::DamageEvent;
-use crate::enemy::Enemy;
 use crate::ui::hud::Hud;
 use crate::ui::popup::popup_text;
+use crate::world::damage::DamageEvent;
+use crate::world::enemy::Enemy;
 use bevy::prelude::*;
 
 pub fn on_enemy_damaged(

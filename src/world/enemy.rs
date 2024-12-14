@@ -1,11 +1,11 @@
 use crate::animation::*;
-use crate::collision::Collider;
-use crate::damage::*;
-use crate::in_game::InGame;
 use crate::physics::*;
-use crate::player::Player;
 use crate::resource::GlobalTextureAtlas;
 use crate::state::GameState;
+use crate::world::collision::Collider;
+use crate::world::damage::*;
+use crate::world::in_game::InGame;
+use crate::world::player::Player;
 use crate::*;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
@@ -17,6 +17,7 @@ use std::time::Duration;
 #[require(InGame)]
 pub struct Enemy;
 
+#[derive(Default)]
 pub struct EnemyPlugin;
 
 impl Enemy {

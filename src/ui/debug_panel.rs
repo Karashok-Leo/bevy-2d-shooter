@@ -1,9 +1,9 @@
-use crate::bullet::Bullet;
-use crate::damage::Health;
-use crate::enemy::Enemy;
-use crate::player::Player;
-use crate::ui::util::text;
 use crate::ui::hud::Hud;
+use crate::ui::util::text;
+use crate::world::bullet::Bullet;
+use crate::world::damage::Health;
+use crate::world::enemy::Enemy;
+use crate::world::player::Player;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 

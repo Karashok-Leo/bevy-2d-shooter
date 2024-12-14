@@ -1,5 +1,5 @@
-use crate::ui::util::*;
 use crate::state::GameState;
+use crate::ui::util::*;
 use bevy::prelude::*;
 use bevy_button_released_plugin::*;
 
@@ -49,10 +49,7 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             },
                         ))
-                        .with_child((
-                            text_bg(&asset_server, "2D Shooter", 104.0),
-                            ZIndex(1),
-                        ));
+                        .with_child((text_bg(&asset_server, "2D Shooter", 104.0), ZIndex(1)));
                     let button_node = Node {
                         width: Val::Px(150.0),
                         height: Val::Px(80.0),

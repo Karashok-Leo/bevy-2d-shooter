@@ -1,9 +1,9 @@
-use crate::collision::ColliderKdTree;
-use crate::damage::*;
-use crate::in_game::InGame;
 use crate::physics::*;
 use crate::resource::GlobalTextureAtlas;
 use crate::state::GameState;
+use crate::world::collision::ColliderKdTree;
+use crate::world::damage::*;
+use crate::world::in_game::InGame;
 use crate::*;
 use bevy::prelude::*;
 use rand::Rng;
@@ -19,6 +19,7 @@ pub struct SpawnInstant(Instant);
 #[derive(Component, Default)]
 pub struct BulletDirection(Vec2);
 
+#[derive(Default)]
 pub struct BulletPlugin;
 
 impl Bullet {

@@ -1,14 +1,14 @@
-use crate::in_game::InGame;
 use crate::input::CursorPosition;
-use crate::player::Player;
 use crate::state::GameState;
+use crate::world::in_game::InGame;
+use crate::world::player::Player;
 use crate::CAMERA_SCALING;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
 #[derive(Component)]
 #[require(InGame)]
-pub struct InGameCamera;
+pub struct SmoothCamera;
 
 #[derive(Component)]
 #[require(Camera)]
@@ -17,12 +17,12 @@ pub struct CameraZoom;
 #[derive(Resource, Default)]
 pub struct ZoomScale(pub f32);
 
-pub struct FollowCameraPlugin;
+pub struct SmoothCameraPlugin;
 
-impl InGameCamera {
+impl SmoothCamera {
     pub fn new() -> impl Bundle {
         (
-            InGameCamera,
+            SmoothCamera,
             Camera2d,
             OrthographicProjection {
                 scale: CAMERA_SCALING,
@@ -34,7 +34,7 @@ impl InGameCamera {
     }
 }
 
-impl Plugin for FollowCameraPlugin {
+impl Plugin for SmoothCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ZoomScale(CAMERA_SCALING)).add_systems(
             Update,
@@ -51,8 +51,8 @@ impl Plugin for FollowCameraPlugin {
 const FOLLOW_SPEED: f32 = 0.01;
 
 fn camera_following_player(
-    mut camera_transform: Single<&mut Transform, With<InGameCamera>>,
-    player_query: Query<&Transform, (With<Player>, Without<InGameCamera>)>,
+    mut camera_transform: Single<&mut Transform, With<SmoothCamera>>,
+    player_query: Query<&Transform, (With<Player>, Without<SmoothCamera>)>,
     cursor_position: Res<CursorPosition>,
 ) {
     let Ok(player_transform) = player_query.get_single() else {

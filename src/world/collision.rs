@@ -16,6 +16,7 @@ pub struct ColliderEntity {
 #[derive(Resource)]
 pub struct ColliderKdTree(pub KdTree<ColliderEntity>);
 
+#[derive(Default)]
 pub struct CollisionPlugin;
 
 impl Plugin for CollisionPlugin {

@@ -42,6 +42,7 @@ pub struct DamageCooldown(Timer);
 #[require(DamageCooldown, Sprite)]
 pub struct DamageFlash;
 
+#[derive(Default)]
 pub struct DamagePlugin;
 
 impl Health {

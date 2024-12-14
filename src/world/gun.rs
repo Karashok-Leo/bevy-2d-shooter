@@ -1,7 +1,7 @@
-use crate::bullet::Bullet;
 use crate::input::CursorPosition;
 use crate::resource::*;
 use crate::state::GameState;
+use crate::world::bullet::Bullet;
 use crate::*;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -14,6 +14,7 @@ pub struct Gun;
 #[derive(Component, Default)]
 pub struct GunTimer(Stopwatch);
 
+#[derive(Default)]
 pub struct GunPlugin;
 
 impl Gun {
