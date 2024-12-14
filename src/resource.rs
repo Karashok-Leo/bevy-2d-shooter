@@ -1,5 +1,5 @@
+use crate::config::GameConfig;
 use crate::state::GameState;
-use crate::*;
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -22,15 +22,16 @@ fn load_assets(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut texture_atlas: ResMut<GlobalTextureAtlas>,
     mut next_state: ResMut<NextState<GameState>>,
+    config: Res<GameConfig>,
 ) {
     let layout = TextureAtlasLayout::from_grid(
-        UVec2::new(TILE_W, TILE_H),
-        SPRITE_SHEET_W,
-        SPRITE_SHEET_H,
+        UVec2::new(config.sprite.tile_w, config.sprite.tile_h),
+        config.sprite.sprite_sheet_width,
+        config.sprite.sprite_sheet_height,
         None,
         None,
     );
     texture_atlas.layout = Some(texture_atlas_layouts.add(layout));
-    texture_atlas.image = Some(asset_server.load(SPRITE_SHEET_PATH));
+    texture_atlas.image = Some(asset_server.load(config.sprite.sprite_sheet_path.as_str()));
     next_state.set(GameState::MainMenu);
 }

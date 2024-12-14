@@ -12,6 +12,7 @@ Some of the code was learned from [another project](https://github.com/bones-ai/
 - Smoother movement and zooming of the camera
 - Pop texts when damaging
 - Health bar with gradual changing background
+- Game config file serialized and deserialized with serde and toml
 
 ## Credits
 

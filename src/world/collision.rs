@@ -1,5 +1,4 @@
 use crate::state::GameState;
-use crate::KD_TREE_REFRESH_RATE;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use kd_tree::{KdPoint, KdTree};
@@ -15,6 +14,8 @@ pub struct ColliderEntity {
 
 #[derive(Resource)]
 pub struct ColliderKdTree(pub KdTree<ColliderEntity>);
+
+pub const KD_TREE_REFRESH_RATE: f32 = 0.1;
 
 #[derive(Default)]
 pub struct CollisionPlugin;

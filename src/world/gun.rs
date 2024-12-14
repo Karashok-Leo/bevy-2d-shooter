@@ -1,8 +1,9 @@
+use crate::config::GameConfig;
 use crate::input::CursorPosition;
 use crate::resource::*;
+use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::bullet::Bullet;
-use crate::*;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
 use bevy::time::Stopwatch;
@@ -40,7 +41,7 @@ impl Plugin for GunPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (shoot_bullets, update_gun_rotation).run_if(in_state(GameState::InGame)),
+            (on_shoot, update_gun_rotation).run_if(in_state(GameState::InGame)),
         );
     }
 }
@@ -59,12 +60,13 @@ fn update_gun_rotation(
     gun_transform.rotation = Quat::from_rotation_z(angle);
 }
 
-fn shoot_bullets(
+fn on_shoot(
     mut commands: Commands,
     texture_atlas: Res<GlobalTextureAtlas>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     mut gun_query: Query<(&GlobalTransform, &mut GunTimer), With<Gun>>,
     time: Res<Time>,
+    config: Res<GameConfig>,
 ) {
     let Ok((gun_transform, mut gun_timer)) = gun_query.get_single_mut() else {
         return;
@@ -76,7 +78,7 @@ fn shoot_bullets(
         return;
     }
 
-    if gun_timer.0.elapsed_secs() < BULLET_SPAWN_INTERVAL {
+    if gun_timer.0.elapsed_secs() < config.gun.bullet_spawn_interval {
         return;
     }
     gun_timer.0.reset();
@@ -84,7 +86,7 @@ fn shoot_bullets(
     let gun_pos = gun_transform.translation().truncate();
     let gun_dir = gun_transform.right().truncate();
 
-    for _ in 0..NUM_BULLETS_PER_SHOT {
+    for _ in 0..config.gun.num_bullets_per_shot {
         commands.spawn(Bullet::new(
             &texture_atlas,
             gun_dir,

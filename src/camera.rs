@@ -2,7 +2,6 @@ use crate::input::CursorPosition;
 use crate::state::GameState;
 use crate::world::in_game::InGame;
 use crate::world::player::Player;
-use crate::CAMERA_SCALING;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
@@ -19,13 +18,15 @@ pub struct ZoomScale(pub f32);
 
 pub struct SmoothCameraPlugin;
 
+pub const INITIAL_CAMERA_SCALE: f32 = 0.32;
+
 impl SmoothCamera {
     pub fn new() -> impl Bundle {
         (
             SmoothCamera,
             Camera2d,
             OrthographicProjection {
-                scale: CAMERA_SCALING,
+                scale: INITIAL_CAMERA_SCALE,
                 ..OrthographicProjection::default_2d()
             },
             Msaa::Off,
@@ -36,15 +37,16 @@ impl SmoothCamera {
 
 impl Plugin for SmoothCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ZoomScale(CAMERA_SCALING)).add_systems(
-            Update,
-            (
-                camera_following_player,
-                scroll_offset_from_events,
-                do_camera_zoom,
-            )
-                .run_if(in_state(GameState::InGame)),
-        );
+        app.insert_resource(ZoomScale(INITIAL_CAMERA_SCALE))
+            .add_systems(
+                Update,
+                (
+                    camera_following_player,
+                    scroll_offset_from_events,
+                    do_camera_zoom,
+                )
+                    .run_if(in_state(GameState::InGame)),
+            );
     }
 }
 

@@ -1,10 +1,11 @@
+use crate::config::GameConfig;
 use crate::physics::*;
 use crate::resource::GlobalTextureAtlas;
+use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::collision::ColliderKdTree;
 use crate::world::damage::*;
 use crate::world::in_game::InGame;
-use crate::*;
 use bevy::prelude::*;
 use rand::Rng;
 use std::time::Instant;
@@ -55,36 +56,41 @@ impl Plugin for BulletPlugin {
         app.add_systems(
             Update,
             (
-                bullet_moving,
+                on_move,
                 despawn_bullets,
-                bullet_damage.in_set(DamagePhase::Post),
+                on_hurt_enemy.in_set(DamagePhase::Post),
             )
                 .run_if(in_state(GameState::InGame)),
         );
     }
 }
 
-fn bullet_moving(mut bullet_query: Query<(&mut Velocity, &BulletDirection), With<Bullet>>) {
+fn on_move(
+    mut bullet_query: Query<(&mut Velocity, &BulletDirection), With<Bullet>>,
+    config: Res<GameConfig>,
+) {
     for (mut velocity, direction) in bullet_query.iter_mut() {
-        velocity.0 = (direction.0.normalize() * Vec2::splat(BULLET_SPEED)).extend(0.0);
+        velocity.0 = (direction.0.normalize() * Vec2::splat(config.gun.bullet_speed)).extend(0.0);
     }
 }
 
 fn despawn_bullets(
     mut commands: Commands,
     bullet_query: Query<(Entity, &SpawnInstant), With<Bullet>>,
+    config: Res<GameConfig>,
 ) {
     for (bullet, instant) in bullet_query.iter() {
-        if instant.0.elapsed().as_secs_f32() > BULLET_TIME_SECS {
+        if instant.0.elapsed().as_secs_f32() > config.gun.bullet_lifetime {
             commands.entity(bullet).despawn_recursive();
         }
     }
 }
 
-fn bullet_damage(
+fn on_hurt_enemy(
     bullet_query: Query<&Transform, With<Bullet>>,
     tree: Res<ColliderKdTree>,
     mut event_writer: EventWriter<DamageEvent>,
+    config: Res<GameConfig>,
 ) {
     if bullet_query.is_empty() {
         return;
@@ -92,11 +98,14 @@ fn bullet_damage(
 
     for bullet_transform in bullet_query.iter() {
         let pos = bullet_transform.translation;
-        for collider in tree.0.within_radius(&[pos.x, pos.y], ENEMY_HURT_RADIUS) {
+        for collider in tree
+            .0
+            .within_radius(&[pos.x, pos.y], config.enemy.enemy_hurt_radius)
+        {
             event_writer.send(DamageEvent {
                 target: collider.entity,
                 context: DamageContext {
-                    damage: BULLET_DAMAGE,
+                    damage: config.gun.bullet_damage,
                     damage_type: DamageType::Bullet.into(),
                     attacker: None,
                 },

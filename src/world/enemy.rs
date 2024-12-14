@@ -1,12 +1,13 @@
 use crate::animation::*;
+use crate::config::GameConfig;
 use crate::physics::*;
 use crate::resource::GlobalTextureAtlas;
+use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::collision::Collider;
 use crate::world::damage::*;
 use crate::world::in_game::InGame;
 use crate::world::player::Player;
-use crate::*;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use rand::prelude::SliceRandom;
@@ -22,15 +23,19 @@ pub struct EnemyPlugin;
 
 impl Enemy {
     const SPRITE_INDEXES: [i32; 4] = [8, 12, 20, 28];
-    pub fn new(texture_atlas: &Res<GlobalTextureAtlas>, player_pos: Vec2) -> impl Bundle {
+    pub fn new(
+        texture_atlas: &Res<GlobalTextureAtlas>,
+        config: &Res<GameConfig>,
+        player_pos: Vec2,
+    ) -> impl Bundle {
         let mut rng = rand::thread_rng();
         let (x, y) = get_random_position_around(player_pos);
         let sprite_index = Self::SPRITE_INDEXES.choose(&mut rng).unwrap();
         let animation_indices = AnimationIndices::from_length(*sprite_index as usize, 4);
         (
             Enemy,
-            Health::new(ENEMY_HEALTH),
-            DamageCooldown::new(Duration::from_secs_f32(ENEMY_DAMAGE_COOLDOWN)),
+            Health::new(config.enemy.enemy_health),
+            DamageCooldown::new(Duration::from_secs_f32(config.enemy.enemy_damage_cooldown)),
             DamageFlash,
             physical_transform(Transform::from_xyz(x, y, SpriteOrder::Enemy.z_index())),
             Sprite::from_atlas_image(
@@ -49,41 +54,39 @@ impl Enemy {
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (enemy_facing, despawn_enemies).run_if(in_state(GameState::InGame)),
-        );
-
-        if DEBUG {
-            app.add_systems(
-                Update,
-                draw_enemy_hurt_box.run_if(in_state(GameState::InGame)),
-            );
-            app.add_systems(OnEnter(GameState::InGame), spawn_dummy);
-        } else {
-            app.add_systems(
+        let spawn_interval = app
+            .world()
+            .get_resource::<GameConfig>()
+            .unwrap()
+            .enemy
+            .enemy_spawn_interval;
+        app.add_systems(OnEnter(GameState::InGame), spawn_dummy)
+            .add_systems(
                 Update,
                 (
-                    spawn_enemies.run_if(on_timer(Duration::from_secs_f32(ENEMY_SPAWN_INTERVAL))),
-                    enemy_moving,
+                    spawn_enemies.run_if(on_timer(Duration::from_secs_f32(spawn_interval))),
+                    on_move,
+                    update_facing,
+                    despawn_enemies,
+                    draw_enemy_hurt_box,
                 )
                     .run_if(in_state(GameState::InGame)),
             );
-        }
     }
 }
 
-fn enemy_moving(
+fn on_move(
     player_transform: Single<&Transform, With<Player>>,
     mut enemy_query: Query<(&Transform, &mut Velocity), (With<Enemy>, Without<Player>)>,
+    config: Res<GameConfig>,
 ) {
     for (transform, mut velocity) in enemy_query.iter_mut() {
         let direction = (player_transform.translation - transform.translation).normalize_or_zero();
-        velocity.0 = direction * ENEMY_SPEED;
+        velocity.0 = direction * config.enemy.enemy_speed;
     }
 }
 
-fn enemy_facing(
+fn update_facing(
     player_transform: Single<&Transform, With<Player>>,
     mut enemy_query: Query<(&Transform, &mut Sprite), (With<Enemy>, Without<Player>)>,
 ) {
@@ -96,7 +99,11 @@ fn spawn_dummy(
     mut commands: Commands,
     texture_atlas: Res<GlobalTextureAtlas>,
     player_query: Query<&Transform, With<Player>>,
+    config: Res<GameConfig>,
 ) {
+    if !config.basic.debug {
+        return;
+    }
     let Ok(player_transform) = player_query.get_single() else {
         return;
     };
@@ -106,14 +113,14 @@ fn spawn_dummy(
     let player_pos = player_transform.translation.truncate();
     commands.spawn((
         Enemy,
-        Health::new(ENEMY_HEALTH * 100.0),
-        DamageCooldown::new(Duration::from_secs_f32(ENEMY_DAMAGE_COOLDOWN)),
+        Health::new(config.enemy.enemy_health * 100.0),
+        DamageCooldown::new(Duration::from_secs_f32(config.enemy.enemy_damage_cooldown)),
         DamageFlash,
-        physical_transform(Transform::from_xyz(
-            player_pos.y,
+        Transform::from_xyz(
+            player_pos.x + 100.0,
             player_pos.y,
             SpriteOrder::Enemy.z_index(),
-        )),
+        ),
         Sprite::from_atlas_image(
             texture_atlas.image.clone().unwrap(),
             TextureAtlas {
@@ -132,20 +139,25 @@ fn spawn_enemies(
     texture_atlas: Res<GlobalTextureAtlas>,
     player_query: Query<&Transform, With<Player>>,
     enemy_query: Query<&Transform, (With<Enemy>, Without<Player>)>,
+    config: Res<GameConfig>,
 ) {
+    if config.basic.debug {
+        return;
+    }
     let Ok(player_transform) = player_query.get_single() else {
         return;
     };
 
     let num_enemies = enemy_query.iter().len();
-    let enemy_spawn_count: usize = (MAX_NUM_ENEMIES - num_enemies).min(SPAWN_RATE_PER_SECOND);
+    let enemy_spawn_count: usize =
+        (config.enemy.max_num_enemies - num_enemies).min(config.enemy.spawn_rate_per_second);
     if enemy_spawn_count <= 0 {
         return;
     }
 
     let player_pos = player_transform.translation.truncate();
     for _ in 0..enemy_spawn_count {
-        commands.spawn(Enemy::new(&texture_atlas, player_pos));
+        commands.spawn(Enemy::new(&texture_atlas, &config, player_pos));
     }
 }
 
@@ -167,11 +179,15 @@ fn get_random_position_around(pos: Vec2) -> (f32, f32) {
     (x, y)
 }
 
-fn draw_enemy_hurt_box(mut gizmos: Gizmos, enemy_query: Query<&Transform, With<Enemy>>) {
+fn draw_enemy_hurt_box(
+    mut gizmos: Gizmos,
+    enemy_query: Query<&Transform, With<Enemy>>,
+    config: Res<GameConfig>,
+) {
     for transform in enemy_query.iter() {
         gizmos.circle_2d(
             Isometry2d::from_translation(transform.translation.truncate()),
-            ENEMY_HURT_RADIUS,
+            config.enemy.enemy_hurt_radius,
             Color::srgb(1.0, 0.0, 0.0),
         );
     }
