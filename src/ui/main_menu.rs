@@ -1,4 +1,4 @@
-use crate::ui::gui::*;
+use crate::ui::util::*;
 use crate::state::GameState;
 use bevy::prelude::*;
 use bevy_button_released_plugin::*;
