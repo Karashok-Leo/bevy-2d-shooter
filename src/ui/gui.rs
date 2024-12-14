@@ -4,6 +4,7 @@ use bevy_tweening::{lens::*, *};
 use rand::Rng;
 use std::time::Duration;
 
+#[derive(Default)]
 pub struct GuiPlugin;
 
 impl Plugin for GuiPlugin {

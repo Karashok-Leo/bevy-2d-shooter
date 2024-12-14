@@ -1,4 +1,4 @@
-use crate::gui::*;
+use crate::ui::gui::*;
 use crate::state::GameState;
 use bevy::prelude::*;
 use bevy_button_released_plugin::*;
@@ -6,6 +6,7 @@ use bevy_button_released_plugin::*;
 #[derive(Component, Default)]
 pub struct MainMenu;
 
+#[derive(Default)]
 pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {

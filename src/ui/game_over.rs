@@ -1,11 +1,12 @@
-use crate::gui::*;
 use crate::state::GameState;
+use crate::ui::gui::*;
 use bevy::prelude::*;
 use bevy_button_released_plugin::OnButtonReleased;
 
 #[derive(Component, Default)]
 pub struct GameOver;
 
+#[derive(Default)]
 pub struct GameOverPlugin;
 
 impl Plugin for GameOverPlugin {

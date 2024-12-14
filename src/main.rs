@@ -8,19 +8,16 @@ use bevy_2d_shooter::camera::FollowCameraPlugin;
 use bevy_2d_shooter::collision::CollisionPlugin;
 use bevy_2d_shooter::damage::DamagePlugin;
 use bevy_2d_shooter::enemy::EnemyPlugin;
-use bevy_2d_shooter::game_over::GameOverPlugin;
-use bevy_2d_shooter::gui::GuiPlugin;
 use bevy_2d_shooter::gun::GunPlugin;
 use bevy_2d_shooter::in_game::InGamePlugin;
 use bevy_2d_shooter::input::InputHandlerPlugin;
-use bevy_2d_shooter::main_menu::MainMenuPlugin;
-use bevy_2d_shooter::hud::HudPlugin;
 use bevy_2d_shooter::physics::PhysicsPlugin;
 use bevy_2d_shooter::player::PlayerPlugin;
 use bevy_2d_shooter::resource::ResourcePlugin;
 use bevy_2d_shooter::state::GameState;
 use bevy_2d_shooter::*;
 use bevy_dev_tools::ui_debug_overlay::DebugUiPlugin;
+use bevy_2d_shooter::ui::UiPlugins;
 
 fn main() {
     App::new()
@@ -46,14 +43,9 @@ fn main() {
             AnimatorPlugin,
             FollowCameraPlugin,
             (PlayerPlugin, GunPlugin, BulletPlugin, EnemyPlugin),
+            UiPlugins,
             DamagePlugin,
-            (
-                MainMenuPlugin,
-                InGamePlugin,
-                GameOverPlugin,
-                GuiPlugin,
-                HudPlugin,
-            ),
+            InGamePlugin,
             DebugUiPlugin,
         ))
         .init_state::<GameState>()
