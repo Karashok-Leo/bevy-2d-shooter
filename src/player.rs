@@ -56,7 +56,7 @@ impl Plugin for PlayerPlugin {
         if DEBUG {
             app.add_systems(
                 Update,
-                draw_player_hurt_box.run_if(in_state(GameState::InGame)),
+                (heal_player, draw_player_hurt_box).run_if(in_state(GameState::InGame)),
             );
         }
     }
@@ -107,6 +107,15 @@ fn player_hurting(
             },
             apply: true,
         });
+    }
+}
+
+fn heal_player(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut player_query: Single<&mut Health, With<Player>>,
+) {
+    if keyboard_input.just_released(KeyCode::KeyH) {
+        player_query.heal(20.0);
     }
 }
 

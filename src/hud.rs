@@ -22,11 +22,16 @@ struct DebugText;
 #[derive(Component, Default)]
 struct Bar;
 
-#[derive(Component, Default)]
-struct BarBackground(f32);
+const BAR_WIDTH: f32 = 400.0;
 
 #[derive(Component, Default)]
-struct BarForeground(f32);
+struct BarWidth(f32);
+
+#[derive(Component, Default)]
+struct BarBackground;
+
+#[derive(Component, Default)]
+struct BarForeground;
 
 pub struct HudPlugin;
 
@@ -39,7 +44,7 @@ impl Plugin for HudPlugin {
             .add_systems(Update, on_enemy_damaged.in_set(DamagePhase::After))
             .add_systems(
                 Update,
-                (update_bar, update_bar_node).run_if(in_state(GameState::InGame)),
+                (update_bar_width, update_bar_data).run_if(in_state(GameState::InGame)),
             )
             .add_systems(
                 Update,
@@ -103,7 +108,7 @@ fn spawn_hud(
         ))
         .with_children(|parent| {
             let bar_node = Node {
-                width: Val::Px(400.0),
+                width: Val::Px(BAR_WIDTH),
                 height: Val::Px(40.0),
                 align_items: AlignItems::Start,
                 justify_content: JustifyContent::Start,
@@ -137,7 +142,8 @@ fn spawn_hud(
                             )
                             .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
                             .with_mode(NodeImageMode::Sliced(slicer.clone())),
-                            BarBackground(400.0),
+                            BarWidth(BAR_WIDTH),
+                            BarBackground,
                         ))
                         .with_children(|parent| {
                             parent.spawn((
@@ -147,7 +153,8 @@ fn spawn_hud(
                                     inner_bar_atlas,
                                 )
                                 .with_mode(NodeImageMode::Sliced(slicer.clone())),
-                                BarForeground(400.0),
+                                BarWidth(BAR_WIDTH),
+                                BarForeground,
                             ));
                         });
                 });
@@ -215,20 +222,37 @@ fn update_debug_texts(
     }
 }
 
-fn update_bar(
-    mut foreground_query: Single<(&mut Node, &BarForeground)>,
-    mut background_query: Single<(&mut Node, &BarBackground), Without<BarForeground>>,
-) {
-    foreground_query.0.width = Val::Px(foreground_query.1 .0);
-    background_query.0.width = Val::Px(background_query.1 .0);
+fn update_bar_width(mut bar_width: Query<(&mut Node, &BarWidth)>) {
+    for (mut node, width) in bar_width.iter_mut() {
+        node.width = Val::Px(width.0);
+    }
 }
 
-fn update_bar_node(
-    mut foreground_query: Single<&mut BarForeground>,
-    mut background_query: Single<&mut BarBackground>,
+const GRADUAL_CHANGE_SPEED: f32 = 0.005;
+
+fn update_bar_data(
+    mut foreground_query: Single<&mut BarWidth, With<BarForeground>>,
+    mut background_query: Single<&mut BarWidth, (With<BarBackground>, Without<BarForeground>)>,
     health: Single<&Health, With<Player>>,
 ) {
     let health_ratio = health.current() / health.max();
-    foreground_query.0 = 400.0 * health_ratio;
-    background_query.0 = background_query.0.lerp(foreground_query.0, 0.005);
+    let target_width = BAR_WIDTH * health_ratio;
+
+    // heal - foreground changes gradually
+    if target_width > foreground_query.0 {
+        foreground_query.0 = foreground_query.0.lerp(target_width, GRADUAL_CHANGE_SPEED);
+    }
+    // damage - foreground changes suddenly
+    else {
+        foreground_query.0 = target_width;
+    }
+
+    // damage - background changes gradually
+    if target_width < background_query.0 {
+        background_query.0 = background_query.0.lerp(target_width, GRADUAL_CHANGE_SPEED);
+    }
+    // heal - background changes suddenly
+    else {
+        background_query.0 = target_width;
+    }
 }

@@ -48,6 +48,8 @@ impl Plugin for FollowCameraPlugin {
     }
 }
 
+const FOLLOW_SPEED: f32 = 0.01;
+
 fn camera_following_player(
     mut camera_transform: Single<&mut Transform, With<InGameCamera>>,
     player_query: Query<&Transform, (With<Player>, Without<InGameCamera>)>,
@@ -61,15 +63,17 @@ fn camera_following_player(
     let cam_pos = player_pos + offset;
     camera_transform.translation = camera_transform
         .translation
-        .lerp(cam_pos.extend(0.0), 0.01);
+        .lerp(cam_pos.extend(0.0), FOLLOW_SPEED);
 }
+
+const ZOOM_SPEED: f32 = 0.01;
 
 fn do_camera_zoom(
     mut query: Query<&mut OrthographicProjection, With<CameraZoom>>,
     zoom_scale: Res<ZoomScale>,
 ) {
     for mut proj in &mut query {
-        proj.scale = proj.scale.lerp(zoom_scale.0, 0.01);
+        proj.scale = proj.scale.lerp(zoom_scale.0, ZOOM_SPEED);
     }
 }
 

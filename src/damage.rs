@@ -68,7 +68,7 @@ impl Health {
         }
     }
 
-    fn heal(&mut self, amount: f32) {
+    pub fn heal(&mut self, amount: f32) {
         self.current += amount;
         if self.current > self.max {
             self.current = self.max;
