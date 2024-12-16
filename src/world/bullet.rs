@@ -97,14 +97,14 @@ fn on_hurt_enemy(
     config: Res<GameConfig>,
 ) {
     for event in collision_events.read() {
-        if !bullet_query.contains(event.0) {
+        if !bullet_query.contains(event.1) {
             continue;
         }
-        if !enemy_query.contains(event.1) {
+        if !enemy_query.contains(event.0) {
             continue;
         }
         damage_events.send(DamageEvent {
-            target: event.1,
+            target: event.0,
             context: DamageContext {
                 damage: config.bullet.damage,
                 damage_type: DamageType::Bullet.into(),

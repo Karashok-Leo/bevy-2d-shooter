@@ -10,7 +10,6 @@ use crate::world::enemy::Enemy;
 use crate::world::in_game::InGame;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy::time::common_conditions::on_timer;
 use std::time::Duration;
 
 #[derive(Component)]
@@ -53,9 +52,7 @@ impl Plugin for PlayerPlugin {
                 Update,
                 (
                     update_facing,
-                    on_hurt
-                        .run_if(on_timer(Duration::from_secs_f32(0.5)))
-                        .in_set(DamagePhase::Post),
+                    on_hurt.in_set(DamagePhase::Post),
                     on_heal,
                     draw_player_hurt_box,
                 )
