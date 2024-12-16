@@ -6,6 +6,7 @@ use crate::state::GameState;
 use crate::world::damage::Health;
 use crate::world::gun::Gun;
 use crate::world::player::Player;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -18,6 +19,7 @@ pub struct InGamePlugin;
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::GameInit), setup_world)
+            .add_systems(OnExit(GameState::InGame), pause_game)
             .add_systems(OnExit(GameState::GameOver), despawn_in_game_entities)
             .add_systems(Update, check_game_over.run_if(in_state(GameState::InGame)));
     }
@@ -58,6 +60,12 @@ fn spawn_world_decorations(
             ),
             Transform::from_xyz(x, y, SpriteOrder::GRASS.z_index()),
         ));
+    }
+}
+
+fn pause_game(mut commands: Commands, query: Query<Entity, With<RigidBody>>) {
+    for entity in query.iter() {
+        commands.entity(entity).insert(RigidBodyDisabled);
     }
 }
 

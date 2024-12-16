@@ -1,12 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use avian2d::interpolation::PhysicsInterpolationPlugin;
+use avian2d::prelude::Gravity;
+use avian2d::PhysicsPlugins;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_2d_shooter::animation::AnimatorPlugin;
 use bevy_2d_shooter::camera::SmoothCameraPlugin;
 use bevy_2d_shooter::config::{get_config, GameConfig};
 use bevy_2d_shooter::input::InputHandlerPlugin;
-use bevy_2d_shooter::physics::PhysicsPlugin;
 use bevy_2d_shooter::resource::ResourcePlugin;
 use bevy_2d_shooter::state::GameState;
 use bevy_2d_shooter::ui::UIPlugins;
@@ -23,12 +25,13 @@ fn main() {
     );
     App::new()
         .insert_resource(ClearColor(bg_color))
+        .insert_resource(Gravity::ZERO)
         .insert_resource(config)
         .add_plugins((
             configured_default_plugins(ww, wh),
+            configured_physics_plugins(),
             ResourcePlugin,
             InputHandlerPlugin,
-            PhysicsPlugin,
             AnimatorPlugin,
             SmoothCameraPlugin,
             WorldPlugins,
@@ -54,6 +57,12 @@ fn configured_default_plugins(window_width: f32, window_height: f32) -> impl Plu
             }),
             ..default()
         })
+}
+
+fn configured_physics_plugins() -> impl PluginGroup {
+    PhysicsPlugins::default()
+        .with_length_unit(16.0)
+        .set(PhysicsInterpolationPlugin::interpolate_translation_all())
 }
 
 fn setup_gizmos_config(config: Res<GameConfig>, mut config_store: ResMut<GizmoConfigStore>) {

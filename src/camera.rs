@@ -54,13 +54,13 @@ const FOLLOW_SPEED: f32 = 0.01;
 
 fn camera_following_player(
     mut camera_transform: Single<&mut Transform, With<SmoothCamera>>,
-    player_query: Query<&Transform, (With<Player>, Without<SmoothCamera>)>,
+    player_query: Query<&GlobalTransform, (With<Player>, Without<SmoothCamera>)>,
     cursor_position: Res<CursorPosition>,
 ) {
     let Ok(player_transform) = player_query.get_single() else {
         return;
     };
-    let player_pos = player_transform.translation.truncate();
+    let player_pos = player_transform.translation().truncate();
     let offset = (cursor_position.0 - player_pos).normalize_or_zero() * 50.0;
     let cam_pos = player_pos + offset;
     camera_transform.translation = camera_transform

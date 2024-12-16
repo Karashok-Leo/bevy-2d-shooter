@@ -78,7 +78,7 @@ fn on_shoot(
         return;
     }
 
-    if gun_timer.0.elapsed_secs() < config.gun.bullet_spawn_interval {
+    if gun_timer.0.elapsed_secs() < config.bullet.spawn_interval {
         return;
     }
     gun_timer.0.reset();
@@ -86,7 +86,7 @@ fn on_shoot(
     let gun_pos = gun_transform.translation().truncate();
     let gun_dir = gun_transform.right().truncate();
 
-    for _ in 0..config.gun.num_bullets_per_shot {
+    for _ in 0..config.bullet.num_per_shot {
         commands.spawn(Bullet::new(
             &texture_atlas,
             gun_dir,

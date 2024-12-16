@@ -17,24 +17,24 @@ world_height = 2500.0
 background_color = [197, 204, 184]
 
 [player]
-player_health = 100.0
-player_speed = 80.0
-player_damage_cooldown = 0.30000001192092896
-player_hurt_radius = 5.0
+health = 100.0
+speed = 80.0
+damage_cooldown = 0.30000001192092896
+collider_size = 5.0
 
 [enemy]
-enemy_health = 100.0
-enemy_speed = 40.0
-enemy_damage = 20.0
-enemy_damage_cooldown = 0.15000000596046448
-enemy_hurt_radius = 6.0
-max_num_enemies = 20000
+health = 100.0
+speed = 40.0
+damage = 20.0
+damage_cooldown = 0.15000000596046448
+collider_size = 6.0
+spawn_limit = 20000
 spawn_rate_per_second = 500
-enemy_spawn_interval = 1.0
+spawn_interval = 1.0
 
-[gun]
-bullet_damage = 20.0
-bullet_speed = 600.0
-bullet_spawn_interval = 0.10000000149011612
-bullet_lifetime = 0.5
-num_bullets_per_shot = 10
+[bullet]
+damage = 20.0
+speed = 600.0
+spawn_interval = 0.10000000149011612
+lifetime = 0.5
+num_per_shot = 10

@@ -1,3 +1,4 @@
+use crate::state::GameState;
 use bevy::ecs::schedule::*;
 use bevy::prelude::*;
 use std::time::Duration;
@@ -107,7 +108,7 @@ impl DamageCooldown {
 
 impl Plugin for DamagePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<DamageEvent>()
+        app.add_state_scoped_event::<DamageEvent>(GameState::InGame)
             .configure_sets(
                 Update,
                 (

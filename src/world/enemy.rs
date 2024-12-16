@@ -1,13 +1,13 @@
 use crate::animation::*;
 use crate::config::GameConfig;
-use crate::physics::*;
 use crate::resource::GlobalTextureAtlas;
 use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
-use crate::world::collision::Collider;
+use crate::world::collision::CollisionLayer;
 use crate::world::damage::*;
 use crate::world::in_game::InGame;
 use crate::world::player::Player;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use rand::prelude::SliceRandom;
@@ -34,10 +34,14 @@ impl Enemy {
         let animation_indices = AnimationIndices::from_length(*sprite_index as usize, 4);
         (
             Enemy,
-            Health::new(config.enemy.enemy_health),
-            DamageCooldown::new(Duration::from_secs_f32(config.enemy.enemy_damage_cooldown)),
+            Health::new(config.enemy.health),
+            DamageCooldown::new(Duration::from_secs_f32(config.enemy.damage_cooldown)),
             DamageFlash,
-            physical_transform(Transform::from_xyz(x, y, SpriteOrder::Enemy.z_index())),
+            Transform::from_xyz(x, y, SpriteOrder::Enemy.z_index()),
+            RigidBody::Dynamic,
+            LockedAxes::ROTATION_LOCKED,
+            Collider::rectangle(config.enemy.collider_size, config.enemy.collider_size),
+            CollisionLayers::new([CollisionLayer::Enemy], [CollisionLayer::Player, CollisionLayer::Bullet]),
             Sprite::from_atlas_image(
                 texture_atlas.image.clone().unwrap(),
                 TextureAtlas {
@@ -47,7 +51,6 @@ impl Enemy {
             ),
             animation_indices,
             AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-            Collider,
         )
     }
 }
@@ -59,13 +62,13 @@ impl Plugin for EnemyPlugin {
             .get_resource::<GameConfig>()
             .unwrap()
             .enemy
-            .enemy_spawn_interval;
+            .spawn_interval;
         app.add_systems(OnEnter(GameState::InGame), spawn_dummy)
+            .add_systems(FixedUpdate, on_move.run_if(in_state(GameState::InGame)))
             .add_systems(
                 Update,
                 (
                     spawn_enemies.run_if(on_timer(Duration::from_secs_f32(spawn_interval))),
-                    on_move,
                     update_facing,
                     despawn_enemies,
                     draw_enemy_hurt_box,
@@ -77,12 +80,16 @@ impl Plugin for EnemyPlugin {
 
 fn on_move(
     player_transform: Single<&Transform, With<Player>>,
-    mut enemy_query: Query<(&Transform, &mut Velocity), (With<Enemy>, Without<Player>)>,
+    mut enemy_query: Query<(&Transform, &mut LinearVelocity), (With<Enemy>, Without<Player>)>,
     config: Res<GameConfig>,
 ) {
     for (transform, mut velocity) in enemy_query.iter_mut() {
-        let direction = (player_transform.translation - transform.translation).normalize_or_zero();
-        velocity.0 = direction * config.enemy.enemy_speed;
+        let direction = (player_transform.translation - transform.translation)
+            .normalize_or_zero()
+            .truncate();
+        let new_velocity = direction * config.enemy.speed;
+        velocity.x = new_velocity.x;
+        velocity.y = new_velocity.y;
     }
 }
 
@@ -108,30 +115,17 @@ fn spawn_dummy(
         return;
     };
 
-    let animation_indices = AnimationIndices::from_length(8, 4);
-
     let player_pos = player_transform.translation.truncate();
-    commands.spawn((
-        Enemy,
-        Health::new(config.enemy.enemy_health * 100.0),
-        DamageCooldown::new(Duration::from_secs_f32(config.enemy.enemy_damage_cooldown)),
-        DamageFlash,
-        Transform::from_xyz(
-            player_pos.x + 100.0,
-            player_pos.y,
-            SpriteOrder::Enemy.z_index(),
-        ),
-        Sprite::from_atlas_image(
-            texture_atlas.image.clone().unwrap(),
-            TextureAtlas {
-                layout: texture_atlas.layout.clone().unwrap(),
-                index: animation_indices.first,
-            },
-        ),
-        animation_indices,
-        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
-        Collider,
-    ));
+    commands
+        .spawn(Enemy::new(&texture_atlas, &config, player_pos))
+        .insert((
+            Health::new(config.enemy.health * 100.0),
+            Transform::from_xyz(
+                player_pos.x + 100.0,
+                player_pos.y,
+                SpriteOrder::Enemy.z_index(),
+            ),
+        ));
 }
 
 fn spawn_enemies(
@@ -150,7 +144,7 @@ fn spawn_enemies(
 
     let num_enemies = enemy_query.iter().len();
     let enemy_spawn_count: usize =
-        (config.enemy.max_num_enemies - num_enemies).min(config.enemy.spawn_rate_per_second);
+        (config.enemy.spawn_limit - num_enemies).min(config.enemy.spawn_rate_per_second);
     if enemy_spawn_count <= 0 {
         return;
     }
@@ -187,7 +181,7 @@ fn draw_enemy_hurt_box(
     for transform in enemy_query.iter() {
         gizmos.circle_2d(
             Isometry2d::from_translation(transform.translation.truncate()),
-            config.enemy.enemy_hurt_radius,
+            config.enemy.collider_size,
             Color::srgb(1.0, 0.0, 0.0),
         );
     }

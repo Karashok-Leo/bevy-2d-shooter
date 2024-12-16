@@ -1,13 +1,14 @@
 use crate::animation::*;
 use crate::config::GameConfig;
 use crate::input::*;
-use crate::physics::*;
 use crate::resource::*;
 use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
-use crate::world::collision::ColliderKdTree;
+use crate::world::collision::CollisionLayer;
 use crate::world::damage::*;
+use crate::world::enemy::Enemy;
 use crate::world::in_game::InGame;
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use std::time::Duration;
@@ -24,12 +25,14 @@ impl Player {
         let animation_indices = AnimationIndices::from_length(0, 4);
         (
             Player,
-            Health::new(config.player.player_health),
-            DamageCooldown::new(Duration::from_secs_f32(
-                config.player.player_damage_cooldown,
-            )),
+            Health::new(config.player.health),
+            DamageCooldown::new(Duration::from_secs_f32(config.player.damage_cooldown)),
             DamageFlash,
-            physical_transform(Transform::from_xyz(0.0, 0.0, SpriteOrder::Player.z_index())),
+            Transform::from_xyz(0.0, 0.0, SpriteOrder::Player.z_index()),
+            RigidBody::Dynamic,
+            LockedAxes::ROTATION_LOCKED,
+            Collider::rectangle(config.player.collider_size, config.player.collider_size),
+            CollisionLayers::new([CollisionLayer::Player], [CollisionLayer::Enemy]),
             Sprite::from_atlas_image(
                 texture_atlas.image.clone().unwrap(),
                 TextureAtlas {
@@ -45,24 +48,24 @@ impl Player {
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (
-                on_move,
-                update_facing,
-                on_hurt
-                    .run_if(on_timer(Duration::from_secs_f32(0.5)))
-                    .in_set(DamagePhase::Post),
-                on_heal,
-                draw_player_hurt_box,
-            )
-                .run_if(in_state(GameState::InGame)),
-        );
+        app.add_systems(FixedUpdate, on_move.run_if(in_state(GameState::InGame)))
+            .add_systems(
+                Update,
+                (
+                    update_facing,
+                    on_hurt
+                        .run_if(on_timer(Duration::from_secs_f32(0.5)))
+                        .in_set(DamagePhase::Post),
+                    on_heal,
+                    draw_player_hurt_box,
+                )
+                    .run_if(in_state(GameState::InGame)),
+            );
     }
 }
 
 fn on_move(
-    mut player_query: Query<(&mut AnimationIndices, &mut Velocity), With<Player>>,
+    mut player_query: Query<(&mut AnimationIndices, &mut LinearVelocity), With<Player>>,
     move_vector: Res<MoveVector>,
     config: Res<GameConfig>,
 ) {
@@ -73,8 +76,8 @@ fn on_move(
         anim_indices.with_first(0);
     } else {
         anim_indices.with_first(4);
-        velocity.0 = move_vector.0.extend(0.0) * config.player.player_speed;
     }
+    velocity.0 = move_vector.0 * config.player.speed;
 }
 
 fn update_facing(
@@ -88,26 +91,25 @@ fn update_facing(
 }
 
 fn on_hurt(
-    mut player_query: Query<(Entity, &Transform), With<Player>>,
-    tree: Res<ColliderKdTree>,
-    mut event_writer: EventWriter<DamageEvent>,
+    enemy_query: Query<(), With<Enemy>>,
+    player_query: Query<(), With<Player>>,
+    mut collision_events: EventReader<CollisionStarted>,
+    mut damage_events: EventWriter<DamageEvent>,
     config: Res<GameConfig>,
 ) {
-    let Ok((entity, transform)) = player_query.get_single_mut() else {
-        return;
-    };
-    let pos = transform.translation;
-
-    for collider in tree
-        .0
-        .within_radius(&[pos.x, pos.y], config.player.player_hurt_radius)
-    {
-        event_writer.send(DamageEvent {
-            target: entity,
+    for event in collision_events.read() {
+        if !enemy_query.contains(event.0) {
+            continue;
+        }
+        if !player_query.contains(event.1) {
+            continue;
+        }
+        damage_events.send(DamageEvent {
+            target: event.1,
             context: DamageContext {
-                damage: config.enemy.enemy_damage,
+                damage: config.enemy.damage,
                 damage_type: DamageType::Enemy.into(),
-                attacker: Some(collider.entity),
+                attacker: Some(event.0),
             },
             apply: true,
         });
@@ -134,7 +136,7 @@ fn draw_player_hurt_box(
 ) {
     gizmos.circle_2d(
         Isometry2d::from_translation(player_query.translation.truncate()),
-        config.player.player_hurt_radius,
+        config.player.collider_size,
         Color::srgb(1.0, 0.0, 0.0),
     );
 }

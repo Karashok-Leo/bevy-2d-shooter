@@ -56,7 +56,7 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
                         texture_atlas.image.clone().unwrap(),
                         outer_bar_atlas,
                     )
-                    .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                        .with_mode(NodeImageMode::Sliced(slicer.clone())),
                 ))
                 .with_children(|parent| {
                     let inner_bar_atlas = TextureAtlas {
@@ -70,8 +70,8 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
                                 texture_atlas.image.clone().unwrap(),
                                 inner_bar_atlas.clone(),
                             )
-                            .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
-                            .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                                .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
+                                .with_mode(NodeImageMode::Sliced(slicer.clone())),
                             BarWidth::new(PLAYER_HEALTH_BAR_WIDTH),
                             BarTargetWidth::Background(1.0),
                             PlayerHealthBar,
@@ -83,7 +83,7 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
                                     texture_atlas.image.clone().unwrap(),
                                     inner_bar_atlas,
                                 )
-                                .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                                    .with_mode(NodeImageMode::Sliced(slicer.clone())),
                                 BarWidth::new(PLAYER_HEALTH_BAR_WIDTH),
                                 BarTargetWidth::Foreground(1.0),
                                 PlayerHealthBar,

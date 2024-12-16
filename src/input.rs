@@ -16,13 +16,8 @@ impl Plugin for InputHandlerPlugin {
         app.init_resource::<MoveVector>()
             .init_resource::<CursorPosition>()
             .add_systems(
-                // The physics simulation needs to know the player's input, so we run this before the fixed timestep loop.
-                // Note that if we ran it in `Update`, it would be too late, as the physics simulation would already have been advanced.
-                // If we ran this in `FixedUpdate`, it would sometimes not register player input, as that schedule may run zero times per frame.
-                RunFixedMainLoop,
-                (update_move_vector, update_cursor_position)
-                    .run_if(in_state(GameState::InGame))
-                    .in_set(RunFixedMainLoopSystem::BeforeFixedMainLoop),
+                Update,
+                (update_move_vector, update_cursor_position).run_if(in_state(GameState::InGame)),
             );
     }
 }
@@ -31,11 +26,10 @@ fn update_move_vector(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut move_vector: ResMut<MoveVector>,
 ) {
-    let w_key = keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp);
-    let a_key = keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft);
-    let s_key = keyboard_input.pressed(KeyCode::KeyS) || keyboard_input.pressed(KeyCode::ArrowDown);
-    let d_key =
-        keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight);
+    let w_key = keyboard_input.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]);
+    let a_key = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
+    let s_key = keyboard_input.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]);
+    let d_key = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
 
     let mut delta = Vec2::ZERO;
     if w_key {

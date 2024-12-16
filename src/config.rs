@@ -12,7 +12,7 @@ pub struct GameConfig {
     pub world: WorldConfig,
     pub player: PlayerConfig,
     pub enemy: EnemyConfig,
-    pub gun: GunConfig,
+    pub bullet: BulletConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -41,31 +41,31 @@ pub struct WorldConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlayerConfig {
-    pub player_health: f32,
-    pub player_speed: f32,
-    pub player_damage_cooldown: f32,
-    pub player_hurt_radius: f32,
+    pub health: f32,
+    pub speed: f32,
+    pub damage_cooldown: f32,
+    pub collider_size: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EnemyConfig {
-    pub enemy_health: f32,
-    pub enemy_speed: f32,
-    pub enemy_damage: f32,
-    pub enemy_damage_cooldown: f32,
-    pub enemy_hurt_radius: f32,
-    pub max_num_enemies: usize,
+    pub health: f32,
+    pub speed: f32,
+    pub damage: f32,
+    pub damage_cooldown: f32,
+    pub collider_size: f32,
+    pub spawn_limit: usize,
     pub spawn_rate_per_second: usize,
-    pub enemy_spawn_interval: f32,
+    pub spawn_interval: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct GunConfig {
-    pub bullet_damage: f32,
-    pub bullet_speed: f32,
-    pub bullet_spawn_interval: f32,
-    pub bullet_lifetime: f32,
-    pub num_bullets_per_shot: usize,
+pub struct BulletConfig {
+    pub damage: f32,
+    pub speed: f32,
+    pub spawn_interval: f32,
+    pub lifetime: f32,
+    pub num_per_shot: usize,
 }
 
 #[derive(Default)]
@@ -91,8 +91,10 @@ fn read_or_create_config() -> Result<GameConfig, Box<dyn Error>> {
     if path.exists() {
         let contents = fs::read_to_string(path)?;
         let config: GameConfig = toml::from_str(&contents)?;
+        log::info!("Config loaded from file");
         Ok(config)
     } else {
+        log::info!("Config file not found, creating default config");
         let default_config = GameConfig::default();
         let toml_string = toml::to_string(&default_config)?;
 
@@ -139,10 +141,10 @@ impl Default for WorldConfig {
 impl Default for PlayerConfig {
     fn default() -> Self {
         Self {
-            player_health: 100.0,
-            player_speed: 80.0,
-            player_damage_cooldown: 0.3,
-            player_hurt_radius: 5.0,
+            health: 100.0,
+            speed: 80.0,
+            damage_cooldown: 0.3,
+            collider_size: 5.0,
         }
     }
 }
@@ -150,26 +152,26 @@ impl Default for PlayerConfig {
 impl Default for EnemyConfig {
     fn default() -> Self {
         Self {
-            enemy_health: 100.0,
-            enemy_speed: 40.0,
-            enemy_damage: 20.0,
-            enemy_damage_cooldown: 0.15,
-            enemy_hurt_radius: 6.0,
-            max_num_enemies: 20000,
+            health: 100.0,
+            speed: 40.0,
+            damage: 20.0,
+            damage_cooldown: 0.15,
+            collider_size: 6.0,
+            spawn_limit: 20000,
             spawn_rate_per_second: 500,
-            enemy_spawn_interval: 1.0,
+            spawn_interval: 1.0,
         }
     }
 }
 
-impl Default for GunConfig {
+impl Default for BulletConfig {
     fn default() -> Self {
         Self {
-            bullet_damage: 20.0,
-            bullet_speed: 600.0,
-            bullet_spawn_interval: 0.1,
-            bullet_lifetime: 0.5,
-            num_bullets_per_shot: 10,
+            damage: 20.0,
+            speed: 600.0,
+            spawn_interval: 0.1,
+            lifetime: 0.5,
+            num_per_shot: 10,
         }
     }
 }
