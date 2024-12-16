@@ -11,6 +11,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use rand::Rng;
 use std::time::Duration;
+use crate::world::despawn::Despawn;
 
 #[derive(Component, Default)]
 #[require(InGame)]
@@ -77,7 +78,7 @@ impl Plugin for BulletPlugin {
             (
                 despawn_bullets_out_of_range,
                 despawn_bullets_out_of_lifespan,
-                on_hit_enemy.in_set(DamagePhase::Post),
+                on_hit_enemy.in_set(DamagePhase::Send),
             )
                 .run_if(in_state(GameState::InGame)),
         );
@@ -90,7 +91,7 @@ fn despawn_bullets_out_of_lifespan(
 ) {
     for (bullet, instant) in bullet_query.iter() {
         if instant.0.finished() {
-            commands.entity(bullet).despawn_recursive();
+            commands.entity(bullet).insert(Despawn);
         }
     }
 }
@@ -101,7 +102,7 @@ fn despawn_bullets_out_of_range(
 ) {
     for (bullet, transform, spawn_point, max_distance) in bullet_query.iter() {
         if transform.translation().truncate().distance(spawn_point.0) > max_distance.0 {
-            commands.entity(bullet).despawn_recursive();
+            commands.entity(bullet).insert(Despawn);
         }
     }
 }
@@ -134,7 +135,7 @@ fn on_hit_enemy(
             apply: true,
         });
         if despawn_on_hit {
-            commands.entity(bullet).despawn_recursive();
+            commands.entity(bullet).insert(Despawn);
         }
     }
 }

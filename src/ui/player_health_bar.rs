@@ -5,6 +5,7 @@ use crate::world::player::Player;
 use bevy::prelude::*;
 use bevy::ui::widget::NodeImageMode;
 
+const PLAYER_HEALTH_BAR_BORDER: f32 = 6.0;
 const PLAYER_HEALTH_BAR_WIDTH: f32 = 400.0;
 
 #[derive(Component)]
@@ -38,25 +39,23 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
             },
         ))
         .with_children(|parent| {
-            let bar_node = Node {
-                width: Val::Px(PLAYER_HEALTH_BAR_WIDTH),
-                height: Val::Px(40.0),
-                align_items: AlignItems::Start,
-                justify_content: JustifyContent::Start,
-                ..default()
-            };
             let outer_bar_atlas = TextureAtlas {
                 layout: texture_atlas.layout.clone().unwrap(),
                 index: 62,
             };
             parent
                 .spawn((
-                    bar_node.clone(),
+                    Node {
+                        border: UiRect::all(Val::Px(PLAYER_HEALTH_BAR_BORDER)),
+                        width: Val::Px(PLAYER_HEALTH_BAR_WIDTH + PLAYER_HEALTH_BAR_BORDER * 2.0),
+                        height: Val::Px(40.0),
+                        ..default()
+                    },
                     ImageNode::from_atlas_image(
                         texture_atlas.image.clone().unwrap(),
                         outer_bar_atlas,
                     )
-                        .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                    .with_mode(NodeImageMode::Sliced(slicer.clone())),
                 ))
                 .with_children(|parent| {
                     let inner_bar_atlas = TextureAtlas {
@@ -65,25 +64,23 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
                     };
                     parent
                         .spawn((
-                            bar_node.clone(),
                             ImageNode::from_atlas_image(
                                 texture_atlas.image.clone().unwrap(),
                                 inner_bar_atlas.clone(),
                             )
-                                .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
-                                .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                            .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
+                            .with_mode(NodeImageMode::Sliced(slicer.clone())),
                             BarWidth::new(PLAYER_HEALTH_BAR_WIDTH),
                             BarTargetWidth::Background(1.0),
                             PlayerHealthBar,
                         ))
                         .with_children(|parent| {
                             parent.spawn((
-                                bar_node,
                                 ImageNode::from_atlas_image(
                                     texture_atlas.image.clone().unwrap(),
                                     inner_bar_atlas,
                                 )
-                                    .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                                .with_mode(NodeImageMode::Sliced(slicer.clone())),
                                 BarWidth::new(PLAYER_HEALTH_BAR_WIDTH),
                                 BarTargetWidth::Foreground(1.0),
                                 PlayerHealthBar,

@@ -13,6 +13,16 @@ Some of the code was learned from [another project](https://github.com/bones-ai/
 - Pop texts when damaging
 - Health bar with gradual changing background
 - Game config file serialized and deserialized with serde and toml
+- Use Avian2d for better 2d physics (main-branch)
+- Enemy AI:
+  - Follow player
+  - Wander around (WIP)
+  - Shoot player (WIP)
+  - Dash towards player (WIP)
+- Bullet Behavior:
+  - Despawn when hitting an enemy
+  - Despawn when out of range
+  - Despawn after timeout
 
 ## Credits
 

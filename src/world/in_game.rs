@@ -7,6 +7,7 @@ use crate::world::damage::Health;
 use crate::world::gun::Gun;
 use crate::world::owner::Owner;
 use crate::world::player::Player;
+use crate::world::despawn::auto_despawn;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use rand::Rng;
@@ -19,7 +20,8 @@ pub struct InGamePlugin;
 
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::GameInit), setup_world)
+        app.add_systems(PostUpdate, auto_despawn)
+            .add_systems(OnEnter(GameState::GameInit), setup_world)
             .add_systems(OnExit(GameState::InGame), pause_game)
             .add_systems(OnExit(GameState::GameOver), despawn_in_game_entities)
             .add_systems(Update, check_game_over.run_if(in_state(GameState::InGame)));

@@ -43,6 +43,13 @@ impl BarTargetWidth {
             Self::Foreground(value) => *value = target,
         }
     }
+
+    pub fn unwrap(&self) -> f32 {
+        match self {
+            Self::Background(value) => *value,
+            Self::Foreground(value) => *value,
+        }
+    }
 }
 
 impl Plugin for BarPlugin {

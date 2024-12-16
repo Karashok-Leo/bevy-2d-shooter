@@ -13,6 +13,7 @@ use bevy::time::common_conditions::on_timer;
 use rand::prelude::SliceRandom;
 use rand::Rng;
 use std::time::Duration;
+use crate::world::despawn::Despawn;
 
 #[derive(Component, Default)]
 #[require(InGame)]
@@ -181,7 +182,7 @@ fn despawn_enemies(mut commands: Commands, enemy_query: Query<(Entity, &Health),
         if health.is_alive() {
             continue;
         }
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).insert(Despawn);
     }
 }
 

@@ -53,7 +53,7 @@ impl Plugin for PlayerPlugin {
             (
                 on_move,
                 update_facing,
-                on_hurt.in_set(DamagePhase::Post),
+                on_hurt.in_set(DamagePhase::Send),
                 on_heal,
                 draw_player_hurt_box,
             )

@@ -11,7 +11,7 @@ pub struct Health {
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DamagePhase {
-    Post,
+    Send,
     Before,
     Apply,
     After,
@@ -112,7 +112,7 @@ impl Plugin for DamagePlugin {
             .configure_sets(
                 Update,
                 (
-                    DamagePhase::Post,
+                    DamagePhase::Send,
                     DamagePhase::Before,
                     DamagePhase::Apply,
                     DamagePhase::After,
@@ -123,7 +123,7 @@ impl Plugin for DamagePlugin {
                 Update,
                 (
                     apply_damage.in_set(DamagePhase::Apply),
-                    update_cooldown.in_set(DamagePhase::Post),
+                    update_cooldown.in_set(DamagePhase::Send),
                 ),
             );
     }

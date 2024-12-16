@@ -3,6 +3,7 @@ use bevy::app::plugin_group;
 pub mod bullet;
 pub mod collision;
 pub mod damage;
+pub mod despawn;
 pub mod enemy;
 pub mod gun;
 pub mod in_game;
