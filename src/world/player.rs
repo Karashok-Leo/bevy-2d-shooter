@@ -4,7 +4,7 @@ use crate::input::*;
 use crate::resource::*;
 use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
-use crate::world::collision::CollisionLayer;
+use crate::world::collision::{try_parse_collider, CollisionLayer};
 use crate::world::damage::*;
 use crate::world::enemy::Enemy;
 use crate::world::in_game::InGame;
@@ -32,6 +32,7 @@ impl Player {
             LockedAxes::ROTATION_LOCKED,
             Collider::rectangle(config.player.collider_size, config.player.collider_size),
             CollisionLayers::new([CollisionLayer::Player], [CollisionLayer::Enemy]),
+            Dominance(5),
             Sprite::from_atlas_image(
                 texture_atlas.image.clone().unwrap(),
                 TextureAtlas {
@@ -47,17 +48,17 @@ impl Player {
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(FixedUpdate, on_move.run_if(in_state(GameState::InGame)))
-            .add_systems(
-                Update,
-                (
-                    update_facing,
-                    on_hurt.in_set(DamagePhase::Post),
-                    on_heal,
-                    draw_player_hurt_box,
-                )
-                    .run_if(in_state(GameState::InGame)),
-            );
+        app.add_systems(
+            Update,
+            (
+                on_move,
+                update_facing,
+                on_hurt.in_set(DamagePhase::Post),
+                on_heal,
+                draw_player_hurt_box,
+            )
+                .run_if(in_state(GameState::InGame)),
+        );
     }
 }
 
@@ -69,11 +70,12 @@ fn on_move(
     let Ok((mut anim_indices, mut velocity)) = player_query.get_single_mut() else {
         return;
     };
-    if move_vector.0.x == 0.0 && move_vector.0.y == 0.0 {
-        anim_indices.with_first(0);
+    let anim_index = if move_vector.0.x == 0.0 && move_vector.0.y == 0.0 {
+        0
     } else {
-        anim_indices.with_first(4);
-    }
+        4
+    };
+    anim_indices.with_first(anim_index);
     velocity.0 = move_vector.0 * config.player.speed;
 }
 
@@ -90,23 +92,24 @@ fn update_facing(
 fn on_hurt(
     enemy_query: Query<(), With<Enemy>>,
     player_query: Query<(), With<Player>>,
-    mut collision_events: EventReader<CollisionStarted>,
+    mut collision_events: EventReader<Collision>,
     mut damage_events: EventWriter<DamageEvent>,
     config: Res<GameConfig>,
 ) {
     for event in collision_events.read() {
-        if !enemy_query.contains(event.0) {
+        let Some(enemy) = try_parse_collider(event.0.entity1, event.0.entity2, &enemy_query) else {
             continue;
-        }
-        if !player_query.contains(event.1) {
+        };
+        let Some(player) = try_parse_collider(event.0.entity1, event.0.entity2, &player_query)
+        else {
             continue;
-        }
+        };
         damage_events.send(DamageEvent {
-            target: event.1,
+            target: player,
             context: DamageContext {
                 damage: config.enemy.damage,
                 damage_type: DamageType::Enemy.into(),
-                attacker: Some(event.0),
+                attacker: Some(enemy),
             },
             apply: true,
         });
@@ -128,12 +131,12 @@ fn on_heal(
 
 fn draw_player_hurt_box(
     mut gizmos: Gizmos,
-    player_query: Single<&Transform, With<Player>>,
+    player_query: Single<&GlobalTransform, With<Player>>,
     config: Res<GameConfig>,
 ) {
-    gizmos.circle_2d(
-        Isometry2d::from_translation(player_query.translation.truncate()),
-        config.player.collider_size,
+    gizmos.rect_2d(
+        Isometry2d::from_translation(player_query.translation().truncate()),
+        Vec2::splat(config.player.collider_size),
         Color::srgb(1.0, 0.0, 0.0),
     );
 }

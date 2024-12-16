@@ -14,9 +14,16 @@ use rand::prelude::SliceRandom;
 use rand::Rng;
 use std::time::Duration;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 #[require(InGame)]
 pub struct Enemy;
+
+// WIP
+#[derive(Component, Default)]
+pub struct Wander;
+
+#[derive(Component)]
+pub struct TargetRange(pub f32);
 
 #[derive(Default)]
 pub struct EnemyPlugin;
@@ -34,6 +41,7 @@ impl Enemy {
         let animation_indices = AnimationIndices::from_length(*sprite_index as usize, 4);
         (
             Enemy,
+            TargetRange(config.enemy.follow_range),
             Health::new(config.enemy.health),
             DamageCooldown::new(Duration::from_secs_f32(config.enemy.damage_cooldown)),
             DamageFlash,
@@ -41,7 +49,10 @@ impl Enemy {
             RigidBody::Dynamic,
             LockedAxes::ROTATION_LOCKED,
             Collider::rectangle(config.enemy.collider_size, config.enemy.collider_size),
-            CollisionLayers::new([CollisionLayer::Enemy], [CollisionLayer::Player, CollisionLayer::Bullet]),
+            CollisionLayers::new(
+                [CollisionLayer::Enemy],
+                [CollisionLayer::Player, CollisionLayer::Bullet],
+            ),
             Sprite::from_atlas_image(
                 texture_atlas.image.clone().unwrap(),
                 TextureAtlas {
@@ -55,6 +66,12 @@ impl Enemy {
     }
 }
 
+impl Default for TargetRange {
+    fn default() -> Self {
+        Self(f32::INFINITY)
+    }
+}
+
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         let spawn_interval = app
@@ -64,10 +81,10 @@ impl Plugin for EnemyPlugin {
             .enemy
             .spawn_interval;
         app.add_systems(OnEnter(GameState::InGame), spawn_dummy)
-            .add_systems(FixedUpdate, on_move.run_if(in_state(GameState::InGame)))
             .add_systems(
                 Update,
                 (
+                    on_move,
                     spawn_enemies.run_if(on_timer(Duration::from_secs_f32(spawn_interval))),
                     update_facing,
                     despawn_enemies,
@@ -79,17 +96,21 @@ impl Plugin for EnemyPlugin {
 }
 
 fn on_move(
-    player_transform: Single<&Transform, With<Player>>,
-    mut enemy_query: Query<(&Transform, &mut LinearVelocity), (With<Enemy>, Without<Player>)>,
+    player_transform: Single<&GlobalTransform, With<Player>>,
+    mut enemy_query: Query<
+        (&GlobalTransform, &TargetRange, &mut LinearVelocity),
+        (With<Enemy>, Without<Player>),
+    >,
     config: Res<GameConfig>,
 ) {
-    for (transform, mut velocity) in enemy_query.iter_mut() {
-        let direction = (player_transform.translation - transform.translation)
-            .normalize_or_zero()
-            .truncate();
-        let new_velocity = direction * config.enemy.speed;
-        velocity.x = new_velocity.x;
-        velocity.y = new_velocity.y;
+    for (transform, target_range, mut velocity) in enemy_query.iter_mut() {
+        let sub = (player_transform.translation() - transform.translation()).truncate();
+        if sub.length() > target_range.0 {
+            velocity.0 = Vec2::ZERO;
+            continue;
+        }
+        let direction = sub.normalize_or_zero();
+        velocity.0 = direction * config.enemy.speed;
     }
 }
 
@@ -175,13 +196,13 @@ fn get_random_position_around(pos: Vec2) -> (f32, f32) {
 
 fn draw_enemy_hurt_box(
     mut gizmos: Gizmos,
-    enemy_query: Query<&Transform, With<Enemy>>,
+    enemy_query: Query<&GlobalTransform, With<Enemy>>,
     config: Res<GameConfig>,
 ) {
     for transform in enemy_query.iter() {
-        gizmos.circle_2d(
-            Isometry2d::from_translation(transform.translation.truncate()),
-            config.enemy.collider_size,
+        gizmos.rect_2d(
+            Isometry2d::from_translation(transform.translation().truncate()),
+            Vec2::splat(config.enemy.collider_size),
             Color::srgb(1.0, 0.0, 0.0),
         );
     }

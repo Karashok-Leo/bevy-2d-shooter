@@ -25,8 +25,9 @@ collider_size = 5.0
 [enemy]
 health = 100.0
 speed = 40.0
-damage = 20.0
+damage = 1.0
 damage_cooldown = 0.15000000596046448
+follow_range = 200.0
 collider_size = 6.0
 spawn_limit = 20000
 spawn_rate_per_second = 500

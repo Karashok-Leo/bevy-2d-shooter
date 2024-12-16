@@ -3,25 +3,32 @@ use crate::input::CursorPosition;
 use crate::resource::*;
 use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
-use crate::world::bullet::Bullet;
+use crate::world::bullet::*;
+use crate::world::owner::Owner;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
-use bevy::time::Stopwatch;
+use std::time::Duration;
 
 #[derive(Component)]
-#[require(GunTimer)]
 pub struct Gun;
 
-#[derive(Component, Default)]
-pub struct GunTimer(Stopwatch);
+#[derive(Component)]
+pub struct GunTimer(pub Timer);
 
 #[derive(Default)]
 pub struct GunPlugin;
 
+impl GunTimer {
+    pub fn new(cooldown: Duration) -> Self {
+        Self(Timer::new(cooldown, TimerMode::Once))
+    }
+}
+
 impl Gun {
-    pub fn new(texture_atlas: &Res<GlobalTextureAtlas>) -> impl Bundle {
+    pub fn new(texture_atlas: &Res<GlobalTextureAtlas>, config: &Res<GameConfig>) -> impl Bundle {
         (
             Gun,
+            GunTimer::new(Duration::from_secs_f32(config.bullet.spawn_interval)),
             Transform::from_xyz(0.0, -4.0, SpriteOrder::Gun.z_index()),
             Sprite {
                 anchor: Anchor::Custom(Vec2::new(-6.0 / 16.0, 0.0)),
@@ -64,11 +71,11 @@ fn on_shoot(
     mut commands: Commands,
     texture_atlas: Res<GlobalTextureAtlas>,
     mouse_input: Res<ButtonInput<MouseButton>>,
-    mut gun_query: Query<(&GlobalTransform, &mut GunTimer), With<Gun>>,
+    mut gun_query: Query<(&Owner, &GlobalTransform, &mut GunTimer), With<Gun>>,
     time: Res<Time>,
     config: Res<GameConfig>,
 ) {
-    let Ok((gun_transform, mut gun_timer)) = gun_query.get_single_mut() else {
+    let Ok((owner, gun_transform, mut gun_timer)) = gun_query.get_single_mut() else {
         return;
     };
 
@@ -78,7 +85,7 @@ fn on_shoot(
         return;
     }
 
-    if gun_timer.0.elapsed_secs() < config.bullet.spawn_interval {
+    if !gun_timer.0.finished() {
         return;
     }
     gun_timer.0.reset();
@@ -87,10 +94,13 @@ fn on_shoot(
     let gun_dir = gun_transform.right().truncate();
 
     for _ in 0..config.bullet.num_per_shot {
-        commands.spawn(Bullet::new(
-            &texture_atlas,
-            gun_dir,
-            gun_pos + gun_dir * 12.0,
+        commands.spawn((
+            Bullet::new(&texture_atlas, &config, gun_dir, gun_pos + gun_dir * 12.0),
+            // Lifespan::new(Duration::from_secs_f32(config.bullet.lifetime)),
+            MaxTravelDistance(160.0),
+            SpawnPoint(gun_pos),
+            Owner(owner.0),
+            DespawnOnHit
         ));
     }
 }

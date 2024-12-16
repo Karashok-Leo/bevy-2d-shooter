@@ -37,7 +37,7 @@ pub struct DamageEvent {
 }
 
 #[derive(Component, Default)]
-pub struct DamageCooldown(Timer);
+pub struct DamageCooldown(pub Timer);
 
 #[derive(Component)]
 #[require(DamageCooldown, Sprite)]

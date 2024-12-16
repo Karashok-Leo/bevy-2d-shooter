@@ -5,6 +5,7 @@ use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::damage::Health;
 use crate::world::gun::Gun;
+use crate::world::owner::Owner;
 use crate::world::player::Player;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -32,9 +33,11 @@ fn setup_world(
     config: Res<GameConfig>,
 ) {
     commands.spawn(SmoothCamera::new());
-    commands
-        .spawn(Player::new(&texture_atlas, &config))
-        .with_child(Gun::new(&texture_atlas));
+    let mut player_commands = commands.spawn(Player::new(&texture_atlas, &config));
+    player_commands.with_child((
+        Gun::new(&texture_atlas, &config),
+        Owner(player_commands.id()),
+    ));
     spawn_world_decorations(&mut commands, &texture_atlas, &config);
     next_state.set(GameState::InGame);
 }
