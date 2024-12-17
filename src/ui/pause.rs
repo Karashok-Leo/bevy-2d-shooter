@@ -1,27 +1,56 @@
-use crate::state::*;
-use crate::ui::util::*;
-use crate::world::in_game::InGameScoped;
+use crate::state::GameState;
+use crate::ui::main_menu::back_to_main_menu;
+use crate::ui::util::{button, text};
 use bevy::prelude::*;
 use bevy_button_released_plugin::OnButtonReleased;
-use crate::ui::main_menu::back_to_main_menu;
-
-#[derive(Component, Default)]
-#[require(InGameScoped)]
-pub struct GameOver;
+use crate::world::in_game::InGameScoped;
 
 #[derive(Default)]
-pub struct GameOverPlugin;
+pub struct PausePlugin;
 
-impl Plugin for GameOverPlugin {
+impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::GameOver), spawn_game_over);
+        app.add_systems(
+            Update,
+            (
+                esc_pause.run_if(in_state(GameState::Running)),
+                esc_continue.run_if(in_state(GameState::Paused)),
+            ),
+        )
+        .add_systems(OnEnter(GameState::Paused), spawn_pause);
     }
 }
 
-fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn esc_pause(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        next_state.set(GameState::Paused);
+    }
+}
+
+fn esc_continue(
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        next_state.set(GameState::Running);
+    }
+}
+
+fn button_continue(
+    _trigger: Trigger<OnButtonReleased>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    next_state.set(GameState::Running);
+}
+
+fn spawn_pause(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
-            GameOver,
+            InGameScoped,
+            StateScoped(GameState::Paused),
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
@@ -40,7 +69,7 @@ fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
                 })
                 .with_children(|parent| {
                     parent.spawn((
-                        text(&asset_server, "Game Over", 100.0),
+                        text(&asset_server, "Game Paused", 100.0),
                         Node {
                             margin: UiRect::all(Val::Px(50.0)),
                             ..default()
@@ -56,16 +85,12 @@ fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
                     };
                     parent
                         .spawn((button(), button_node.clone()))
-                        .observe(back_to_main_menu)
-                        .with_child(text(&asset_server, "Back", 50.0));
+                        .observe(button_continue)
+                        .with_child(text(&asset_server, "Continue", 50.0));
                     parent
                         .spawn((button(), button_node.clone()))
-                        .observe(on_restart)
-                        .with_child(text(&asset_server, "Restart", 50.0));
+                        .observe(back_to_main_menu)
+                        .with_child(text(&asset_server, "Back", 50.0));
                 });
         });
-}
-
-fn on_restart(_trigger: Trigger<OnButtonReleased>, mut next_state: ResMut<NextState<GameState>>) {
-    next_state.set(GameState::GameInit);
 }

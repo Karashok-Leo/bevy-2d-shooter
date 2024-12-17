@@ -6,7 +6,7 @@ use crate::world::collision::*;
 use crate::world::damage::*;
 use crate::world::despawn::PostDespawn;
 use crate::world::enemy::Enemy;
-use crate::world::in_game::InGame;
+use crate::world::in_game::InGameScoped;
 use crate::world::owner::Owner;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -14,7 +14,7 @@ use rand::Rng;
 use std::time::Duration;
 
 #[derive(Component, Default)]
-#[require(InGame)]
+#[require(InGameScoped)]
 pub struct Bullet;
 
 #[derive(Component, Default)]

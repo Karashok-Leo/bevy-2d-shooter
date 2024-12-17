@@ -77,3 +77,10 @@ fn on_start(
 fn on_quit(_trigger: Trigger<OnButtonReleased>, mut exit: EventWriter<AppExit>) {
     exit.send(AppExit::Success);
 }
+
+pub fn back_to_main_menu(
+    _trigger: Trigger<OnButtonReleased>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    next_state.set(AppState::MainMenu);
+}

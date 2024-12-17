@@ -6,7 +6,7 @@ use crate::state::GameState;
 use crate::world::collision::CollisionLayer;
 use crate::world::damage::*;
 use crate::world::despawn::PostDespawn;
-use crate::world::in_game::InGame;
+use crate::world::in_game::InGameScoped;
 use crate::world::player::Player;
 use avian2d::prelude::*;
 use bevy::prelude::*;
@@ -16,7 +16,7 @@ use rand::Rng;
 use std::time::Duration;
 
 #[derive(Component, Default)]
-#[require(InGame)]
+#[require(InGameScoped)]
 pub struct Enemy;
 
 // WIP

@@ -7,13 +7,13 @@ use crate::state::GameState;
 use crate::world::collision::{try_parse_collider, CollisionLayer};
 use crate::world::damage::*;
 use crate::world::enemy::Enemy;
-use crate::world::in_game::InGame;
+use crate::world::in_game::InGameScoped;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use std::time::Duration;
 
 #[derive(Component)]
-#[require(InGame)]
+#[require(InGameScoped)]
 pub struct Player;
 
 #[derive(Default)]

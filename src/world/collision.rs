@@ -1,4 +1,4 @@
-use avian2d::prelude::PhysicsLayer;
+use avian2d::prelude::{PhysicsLayer, RigidBody, RigidBodyDisabled};
 use bevy::ecs::query::{QueryData, QueryFilter};
 use bevy::prelude::*;
 
@@ -21,5 +21,17 @@ pub fn try_parse_collider<D: QueryData, F: QueryFilter>(
         Some(entity2)
     } else {
         None
+    }
+}
+
+pub fn enable_rigid_bodies(mut commands: Commands, query: Query<Entity, With<RigidBodyDisabled>>) {
+    for entity in query.iter() {
+        commands.entity(entity).remove::<RigidBodyDisabled>();
+    }
+}
+
+pub fn disable_rigid_bodies(mut commands: Commands, query: Query<Entity, With<RigidBody>>) {
+    for entity in query.iter() {
+        commands.entity(entity).insert(RigidBodyDisabled);
     }
 }

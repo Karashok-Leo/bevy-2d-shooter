@@ -41,6 +41,7 @@ fn main() {
         .init_state::<AppState>()
         .add_sub_state::<GameState>()
         .enable_state_scoped_entities::<AppState>()
+        .enable_state_scoped_entities::<GameState>()
         .add_systems(Startup, setup_gizmos_config)
         .run();
 }

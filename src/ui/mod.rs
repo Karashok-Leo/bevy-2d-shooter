@@ -1,13 +1,14 @@
 use bevy::app::plugin_group;
 
 pub mod bar;
-mod damage_popup;
-mod debug_panel;
+pub mod damage_popup;
+pub mod debug_panel;
 pub mod game_over;
 pub mod hud;
 pub mod main_menu;
+pub mod pause;
 pub mod player_health_bar;
-mod popup;
+pub mod popup;
 pub mod util;
 
 plugin_group! {
@@ -17,6 +18,7 @@ plugin_group! {
         bar:::BarPlugin,
         hud:::HudPlugin,
         main_menu:::MainMenuPlugin,
+        pause:::PausePlugin,
         game_over:::GameOverPlugin,
     }
 }

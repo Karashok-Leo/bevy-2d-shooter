@@ -3,14 +3,14 @@ use crate::ui::damage_popup::on_enemy_damaged;
 use crate::ui::debug_panel::*;
 use crate::ui::player_health_bar::*;
 use crate::world::damage::*;
-use crate::world::in_game::InGame;
+use crate::world::in_game::InGameScoped;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
 use std::time::Duration;
 
 #[derive(Component, Default)]
-#[require(InGame)]
+#[require(InGameScoped)]
 pub(crate) struct Hud;
 
 #[derive(Default)]
