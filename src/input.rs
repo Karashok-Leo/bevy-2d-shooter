@@ -17,7 +17,7 @@ impl Plugin for InputHandlerPlugin {
             .init_resource::<CursorPosition>()
             .add_systems(
                 Update,
-                (update_move_vector, update_cursor_position).run_if(in_state(GameState::InGame)),
+                (update_move_vector, update_cursor_position).run_if(in_state(GameState::Running)),
             );
     }
 }

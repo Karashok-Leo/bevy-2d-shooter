@@ -48,7 +48,7 @@ impl Plugin for GunPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (on_shoot, update_gun_rotation).run_if(in_state(GameState::InGame)),
+            (on_shoot, update_gun_rotation).run_if(in_state(GameState::Running)),
         );
     }
 }
@@ -100,7 +100,7 @@ fn on_shoot(
             MaxTravelDistance(160.0),
             SpawnPoint(gun_pos),
             Owner(owner.0),
-            DespawnOnHit
+            DespawnOnHit,
         ));
     }
 }

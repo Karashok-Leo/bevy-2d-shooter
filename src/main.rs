@@ -10,7 +10,7 @@ use bevy_2d_shooter::camera::SmoothCameraPlugin;
 use bevy_2d_shooter::config::{get_config, GameConfig};
 use bevy_2d_shooter::input::InputHandlerPlugin;
 use bevy_2d_shooter::resource::ResourcePlugin;
-use bevy_2d_shooter::state::GameState;
+use bevy_2d_shooter::state::{AppState, GameState};
 use bevy_2d_shooter::ui::UIPlugins;
 use bevy_2d_shooter::world::WorldPlugins;
 
@@ -37,7 +37,9 @@ fn main() {
             WorldPlugins,
             UIPlugins,
         ))
-        .init_state::<GameState>()
+        .init_state::<AppState>()
+        .add_sub_state::<GameState>()
+        .enable_state_scoped_entities::<AppState>()
         .add_systems(Startup, setup_gizmos_config)
         .run();
 }

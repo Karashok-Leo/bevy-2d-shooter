@@ -2,12 +2,12 @@ use crate::camera::SmoothCamera;
 use crate::config::GameConfig;
 use crate::resource::*;
 use crate::sprite_order::SpriteOrder;
-use crate::state::GameState;
+use crate::state::*;
 use crate::world::damage::Health;
+use crate::world::despawn::*;
 use crate::world::gun::Gun;
 use crate::world::owner::Owner;
 use crate::world::player::Player;
-use crate::world::despawn::auto_despawn;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use rand::Rng;
@@ -20,11 +20,12 @@ pub struct InGamePlugin;
 
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostUpdate, auto_despawn)
+        app.add_systems(PostUpdate, despawn_recursive::<PostDespawn>)
             .add_systems(OnEnter(GameState::GameInit), setup_world)
-            .add_systems(OnExit(GameState::InGame), pause_game)
-            .add_systems(OnExit(GameState::GameOver), despawn_in_game_entities)
-            .add_systems(Update, check_game_over.run_if(in_state(GameState::InGame)));
+            .add_systems(OnExit(GameState::Running), pause_game)
+            .add_systems(OnExit(AppState::InGame), despawn_recursive::<InGame>)
+            .add_systems(OnExit(GameState::GameOver), despawn_recursive::<InGame>)
+            .add_systems(Update, check_game_over.run_if(in_state(GameState::Running)));
     }
 }
 
@@ -41,7 +42,7 @@ fn setup_world(
         Owner(player_commands.id()),
     ));
     spawn_world_decorations(&mut commands, &texture_atlas, &config);
-    next_state.set(GameState::InGame);
+    next_state.set(GameState::Running);
 }
 
 fn spawn_world_decorations(
@@ -71,12 +72,6 @@ fn spawn_world_decorations(
 fn pause_game(mut commands: Commands, query: Query<Entity, With<RigidBody>>) {
     for entity in query.iter() {
         commands.entity(entity).insert(RigidBodyDisabled);
-    }
-}
-
-fn despawn_in_game_entities(mut commands: Commands, in_game_query: Query<Entity, With<InGame>>) {
-    for in_game in in_game_query.iter() {
-        commands.entity(in_game).despawn_recursive();
     }
 }
 

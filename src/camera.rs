@@ -38,6 +38,7 @@ impl SmoothCamera {
 impl Plugin for SmoothCameraPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ZoomScale(INITIAL_CAMERA_SCALE))
+            .add_systems(OnEnter(GameState::GameInit), reset_camera_scale)
             .add_systems(
                 Update,
                 (
@@ -45,12 +46,16 @@ impl Plugin for SmoothCameraPlugin {
                     scroll_offset_from_events,
                     do_camera_zoom,
                 )
-                    .run_if(in_state(GameState::InGame)),
+                    .run_if(in_state(GameState::Running)),
             );
     }
 }
 
 const FOLLOW_SPEED: f32 = 0.01;
+
+fn reset_camera_scale(mut zoom_scale: ResMut<ZoomScale>) {
+    zoom_scale.0 = INITIAL_CAMERA_SCALE;
+}
 
 fn camera_following_player(
     mut camera_transform: Single<&mut Transform, With<SmoothCamera>>,

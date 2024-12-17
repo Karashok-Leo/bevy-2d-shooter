@@ -4,6 +4,7 @@ use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::collision::*;
 use crate::world::damage::*;
+use crate::world::despawn::PostDespawn;
 use crate::world::enemy::Enemy;
 use crate::world::in_game::InGame;
 use crate::world::owner::Owner;
@@ -11,7 +12,6 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use rand::Rng;
 use std::time::Duration;
-use crate::world::despawn::Despawn;
 
 #[derive(Component, Default)]
 #[require(InGame)]
@@ -80,7 +80,7 @@ impl Plugin for BulletPlugin {
                 despawn_bullets_out_of_lifespan,
                 on_hit_enemy.in_set(DamagePhase::Send),
             )
-                .run_if(in_state(GameState::InGame)),
+                .run_if(in_state(GameState::Running)),
         );
     }
 }
@@ -91,7 +91,7 @@ fn despawn_bullets_out_of_lifespan(
 ) {
     for (bullet, instant) in bullet_query.iter() {
         if instant.0.finished() {
-            commands.entity(bullet).insert(Despawn);
+            commands.entity(bullet).insert(PostDespawn);
         }
     }
 }
@@ -102,7 +102,7 @@ fn despawn_bullets_out_of_range(
 ) {
     for (bullet, transform, spawn_point, max_distance) in bullet_query.iter() {
         if transform.translation().truncate().distance(spawn_point.0) > max_distance.0 {
-            commands.entity(bullet).insert(Despawn);
+            commands.entity(bullet).insert(PostDespawn);
         }
     }
 }
@@ -135,7 +135,7 @@ fn on_hit_enemy(
             apply: true,
         });
         if despawn_on_hit {
-            commands.entity(bullet).insert(Despawn);
+            commands.entity(bullet).insert(PostDespawn);
         }
     }
 }

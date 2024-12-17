@@ -5,6 +5,7 @@ use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::collision::CollisionLayer;
 use crate::world::damage::*;
+use crate::world::despawn::PostDespawn;
 use crate::world::in_game::InGame;
 use crate::world::player::Player;
 use avian2d::prelude::*;
@@ -13,7 +14,6 @@ use bevy::time::common_conditions::on_timer;
 use rand::prelude::SliceRandom;
 use rand::Rng;
 use std::time::Duration;
-use crate::world::despawn::Despawn;
 
 #[derive(Component, Default)]
 #[require(InGame)]
@@ -81,7 +81,7 @@ impl Plugin for EnemyPlugin {
             .unwrap()
             .enemy
             .spawn_interval;
-        app.add_systems(OnEnter(GameState::InGame), spawn_dummy)
+        app.add_systems(OnEnter(GameState::Running), spawn_dummy)
             .add_systems(
                 Update,
                 (
@@ -91,7 +91,7 @@ impl Plugin for EnemyPlugin {
                     despawn_enemies,
                     draw_enemy_hurt_box,
                 )
-                    .run_if(in_state(GameState::InGame)),
+                    .run_if(in_state(GameState::Running)),
             );
     }
 }
@@ -182,7 +182,7 @@ fn despawn_enemies(mut commands: Commands, enemy_query: Query<(Entity, &Health),
         if health.is_alive() {
             continue;
         }
-        commands.entity(entity).insert(Despawn);
+        commands.entity(entity).insert(PostDespawn);
     }
 }
 

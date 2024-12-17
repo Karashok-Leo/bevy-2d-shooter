@@ -1,9 +1,11 @@
-use crate::state::GameState;
+use crate::state::*;
 use crate::ui::util::*;
+use crate::world::in_game::InGame;
 use bevy::prelude::*;
 use bevy_button_released_plugin::OnButtonReleased;
 
 #[derive(Component, Default)]
+#[require(InGame)]
 pub struct GameOver;
 
 #[derive(Default)]
@@ -11,12 +13,11 @@ pub struct GameOverPlugin;
 
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::GameOver), game_over)
-            .add_systems(OnExit(GameState::GameOver), back_to_main_menu);
+        app.add_systems(OnEnter(GameState::GameOver), spawn_game_over);
     }
 }
 
-fn game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             GameOver,
@@ -64,14 +65,8 @@ fn game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn back_to_main_menu(mut commands: Commands, game_over_query: Query<Entity, With<GameOver>>) {
-    for game_over in game_over_query.iter() {
-        commands.entity(game_over).despawn_recursive();
-    }
-}
-
-fn on_back(_trigger: Trigger<OnButtonReleased>, mut next_state: ResMut<NextState<GameState>>) {
-    next_state.set(GameState::MainMenu);
+fn on_back(_trigger: Trigger<OnButtonReleased>, mut next_state: ResMut<NextState<AppState>>) {
+    next_state.set(AppState::MainMenu);
 }
 
 fn on_restart(_trigger: Trigger<OnButtonReleased>, mut next_state: ResMut<NextState<GameState>>) {

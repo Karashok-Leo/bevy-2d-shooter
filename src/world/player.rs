@@ -57,7 +57,7 @@ impl Plugin for PlayerPlugin {
                 on_heal,
                 draw_player_hurt_box,
             )
-                .run_if(in_state(GameState::InGame)),
+                .run_if(in_state(GameState::Running)),
         );
     }
 }

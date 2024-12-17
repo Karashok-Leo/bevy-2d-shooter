@@ -1,5 +1,5 @@
 use crate::config::GameConfig;
-use crate::state::GameState;
+use crate::state::AppState;
 use bevy::prelude::*;
 
 #[derive(Resource, Default)]
@@ -13,7 +13,7 @@ pub struct ResourcePlugin;
 impl Plugin for ResourcePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<GlobalTextureAtlas>()
-            .add_systems(OnEnter(GameState::Loading), load_assets);
+            .add_systems(OnEnter(AppState::Loading), load_assets);
     }
 }
 
@@ -21,7 +21,7 @@ fn load_assets(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut texture_atlas: ResMut<GlobalTextureAtlas>,
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_state: ResMut<NextState<AppState>>,
     config: Res<GameConfig>,
 ) {
     let layout = TextureAtlasLayout::from_grid(
@@ -33,5 +33,5 @@ fn load_assets(
     );
     texture_atlas.layout = Some(texture_atlas_layouts.add(layout));
     texture_atlas.image = Some(asset_server.load(config.sprite.sprite_sheet_path.as_str()));
-    next_state.set(GameState::MainMenu);
+    next_state.set(AppState::MainMenu);
 }

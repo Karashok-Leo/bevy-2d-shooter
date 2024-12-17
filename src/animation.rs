@@ -41,7 +41,7 @@ impl AnimationIndices {
 
 impl Plugin for AnimatorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, animate.run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, animate.run_if(in_state(GameState::Running)));
     }
 }
 

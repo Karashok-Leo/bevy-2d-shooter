@@ -23,8 +23,8 @@ impl Plugin for HudPlugin {
                 OnEnter(GameState::GameInit),
                 (spawn_debug_panel, spawn_player_health_bar),
             )
-            .add_systems(OnEnter(GameState::InGame), show_hud)
-            .add_systems(OnExit(GameState::InGame), hide_hud)
+            .add_systems(OnEnter(GameState::Running), show_hud)
+            .add_systems(OnEnter(GameState::GameOver), hide_hud)
             .add_systems(Update, on_enemy_damaged.in_set(DamagePhase::After))
             .add_systems(
                 Update,
@@ -32,7 +32,7 @@ impl Plugin for HudPlugin {
                     update_player_health_bar,
                     update_debug_texts.run_if(on_timer(Duration::from_secs_f32(0.2))),
                 )
-                    .run_if(in_state(GameState::InGame).or(in_state(GameState::GameOver))),
+                    .run_if(in_state(GameState::Running)),
             );
     }
 }

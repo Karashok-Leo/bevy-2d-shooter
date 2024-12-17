@@ -1,4 +1,4 @@
-use crate::state::GameState;
+use crate::state::{AppState, GameState};
 use crate::ui::util::*;
 use bevy::prelude::*;
 use bevy_button_released_plugin::*;
@@ -11,16 +11,16 @@ pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::MainMenu), setup_main_menu)
-            .add_systems(OnExit(GameState::MainMenu), despawn_main_menu);
+        app.add_systems(OnEnter(AppState::MainMenu), setup_main_menu);
     }
 }
 
 fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((MainMenu, Camera2d));
+    commands.spawn((MainMenu, StateScoped(AppState::MainMenu), Camera2d));
     commands
         .spawn((
             MainMenu,
+            StateScoped(AppState::MainMenu),
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
@@ -37,16 +37,15 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent
-                        .spawn((
-                            text(&asset_server, "2D Shooter", 100.0),
-                            Node {
-                                margin: UiRect::all(Val::Px(50.0)),
-                                align_items: AlignItems::Center,
-                                justify_content: JustifyContent::Center,
-                                ..default()
-                            },
-                        ));
+                    parent.spawn((
+                        text(&asset_server, "2D Shooter", 100.0),
+                        Node {
+                            margin: UiRect::all(Val::Px(50.0)),
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
+                            ..default()
+                        },
+                    ));
                     let button_node = Node {
                         width: Val::Px(150.0),
                         height: Val::Px(80.0),
@@ -67,14 +66,13 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn despawn_main_menu(mut commands: Commands, main_menu_query: Query<Entity, With<MainMenu>>) {
-    for main_menu in main_menu_query.iter() {
-        commands.entity(main_menu).despawn_recursive();
-    }
-}
-
-fn on_start(_trigger: Trigger<OnButtonReleased>, mut next_state: ResMut<NextState<GameState>>) {
-    next_state.set(GameState::GameInit);
+fn on_start(
+    _trigger: Trigger<OnButtonReleased>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+) {
+    next_app_state.set(AppState::InGame);
+    next_game_state.set(GameState::GameInit);
 }
 
 fn on_quit(_trigger: Trigger<OnButtonReleased>, mut exit: EventWriter<AppExit>) {

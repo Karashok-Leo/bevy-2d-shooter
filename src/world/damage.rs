@@ -108,7 +108,7 @@ impl DamageCooldown {
 
 impl Plugin for DamagePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state_scoped_event::<DamageEvent>(GameState::InGame)
+        app.add_state_scoped_event::<DamageEvent>(GameState::Running)
             .configure_sets(
                 Update,
                 (
