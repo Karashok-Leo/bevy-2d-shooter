@@ -16,7 +16,6 @@ impl Plugin for MainMenuPlugin {
 }
 
 fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((MainMenu, StateScoped(AppState::MainMenu), Camera2d));
     commands
         .spawn((
             MainMenu,

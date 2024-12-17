@@ -16,6 +16,7 @@ use bevy_2d_shooter::world::WorldPlugins;
 
 fn main() {
     let config = get_config();
+    let tile_size = config.basic.tile_size;
     let ww = config.basic.window_width;
     let wh = config.basic.window_height;
     let bg_color = Color::srgb_u8(
@@ -29,7 +30,7 @@ fn main() {
         .insert_resource(config)
         .add_plugins((
             configured_default_plugins(ww, wh),
-            configured_physics_plugins(),
+            configured_physics_plugins(tile_size),
             ResourcePlugin,
             InputHandlerPlugin,
             AnimatorPlugin,
@@ -61,9 +62,9 @@ fn configured_default_plugins(window_width: f32, window_height: f32) -> impl Plu
         })
 }
 
-fn configured_physics_plugins() -> impl PluginGroup {
+fn configured_physics_plugins(tile_size: f32) -> impl PluginGroup {
     PhysicsPlugins::default()
-        .with_length_unit(16.0)
+        .with_length_unit(tile_size)
         .set(PhysicsInterpolationPlugin::interpolate_translation_all())
 }
 

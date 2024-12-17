@@ -9,6 +9,7 @@ pub mod gun;
 pub mod in_game;
 pub mod owner;
 pub mod player;
+pub mod map;
 
 plugin_group! {
     pub struct WorldPlugins{

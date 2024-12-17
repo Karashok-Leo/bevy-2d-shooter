@@ -1,4 +1,3 @@
-use crate::camera::SmoothCamera;
 use crate::config::GameConfig;
 use crate::resource::*;
 use crate::sprite_order::SpriteOrder;
@@ -35,7 +34,6 @@ fn setup_world(
     mut next_state: ResMut<NextState<GameState>>,
     config: Res<GameConfig>,
 ) {
-    commands.spawn(SmoothCamera::new());
     let mut player_commands = commands.spawn(Player::new(&texture_atlas, &config));
     player_commands.with_child((
         Gun::new(&texture_atlas, &config),

@@ -17,6 +17,7 @@ pub struct GameConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BasicConfig {
+    pub tile_size: f32,
     pub window_width: f32,
     pub window_height: f32,
     pub debug: bool,
@@ -109,6 +110,7 @@ fn read_or_create_config() -> Result<GameConfig, Box<dyn Error>> {
 impl Default for BasicConfig {
     fn default() -> Self {
         Self {
+            tile_size: 16.0,
             window_width: 1280.0,
             window_height: 720.0,
             debug: false,
