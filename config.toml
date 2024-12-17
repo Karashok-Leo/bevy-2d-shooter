@@ -1,14 +1,8 @@
 [basic]
+tile_size = 16.0
 window_width = 1280.0
 window_height = 720.0
-debug = true
-
-[sprite]
-sprite_sheet_path = "sprites.png"
-sprite_sheet_width = 8
-sprite_sheet_height = 8
-tile_w = 16
-tile_h = 16
+debug = false
 
 [world]
 num_world_decorations = 500
@@ -25,9 +19,9 @@ collider_size = 5.0
 [enemy]
 health = 100.0
 speed = 40.0
-damage = 10.0
+damage = 20.0
 damage_cooldown = 0.15000000596046448
-follow_range = 200.0
+follow_range = 1000.0
 collider_size = 6.0
 spawn_limit = 20000
 spawn_rate_per_second = 500

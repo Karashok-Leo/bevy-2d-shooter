@@ -7,9 +7,9 @@ pub mod despawn;
 pub mod enemy;
 pub mod gun;
 pub mod in_game;
+pub mod map;
 pub mod owner;
 pub mod player;
-pub mod map;
 
 plugin_group! {
     pub struct WorldPlugins{

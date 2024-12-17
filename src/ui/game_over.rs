@@ -1,9 +1,10 @@
+use crate::resource::GlobalFont;
 use crate::state::*;
+use crate::ui::main_menu::back_to_main_menu;
 use crate::ui::util::*;
 use crate::world::in_game::InGameScoped;
 use bevy::prelude::*;
 use bevy_button_released_plugin::OnButtonReleased;
-use crate::ui::main_menu::back_to_main_menu;
 
 #[derive(Component, Default)]
 #[require(InGameScoped)]
@@ -18,7 +19,7 @@ impl Plugin for GameOverPlugin {
     }
 }
 
-fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_game_over(mut commands: Commands, font: Res<GlobalFont>) {
     commands
         .spawn((
             GameOver,
@@ -40,7 +41,7 @@ fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
                 })
                 .with_children(|parent| {
                     parent.spawn((
-                        text(&asset_server, "Game Over", 100.0),
+                        text(font.handle.clone(), "Game Over", 100.0),
                         Node {
                             margin: UiRect::all(Val::Px(50.0)),
                             ..default()
@@ -57,11 +58,11 @@ fn spawn_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent
                         .spawn((button(), button_node.clone()))
                         .observe(back_to_main_menu)
-                        .with_child(text(&asset_server, "Back", 50.0));
+                        .with_child(text(font.handle.clone(), "Back", 50.0));
                     parent
                         .spawn((button(), button_node.clone()))
                         .observe(on_restart)
-                        .with_child(text(&asset_server, "Restart", 50.0));
+                        .with_child(text(font.handle.clone(), "Restart", 50.0));
                 });
         });
 }

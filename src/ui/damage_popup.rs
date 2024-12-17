@@ -1,3 +1,4 @@
+use crate::resource::GlobalFont;
 use crate::ui::hud::Hud;
 use crate::ui::popup::popup_text;
 use crate::world::damage::DamageEvent;
@@ -6,7 +7,7 @@ use bevy::prelude::*;
 
 pub fn on_enemy_damaged(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    font: Res<GlobalFont>,
     mut event_reader: EventReader<DamageEvent>,
     mut enemy_query: Query<&GlobalTransform, With<Enemy>>,
 ) {
@@ -21,7 +22,7 @@ pub fn on_enemy_damaged(
             commands.spawn((
                 Hud,
                 popup_text(
-                    &asset_server,
+                    font.handle.clone(),
                     event.context.damage.to_string(),
                     pop_transform,
                     TextColor(Color::srgb(0.8, 0.1, 0.1)),

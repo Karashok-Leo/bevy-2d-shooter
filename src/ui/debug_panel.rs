@@ -1,3 +1,4 @@
+use crate::resource::GlobalFont;
 use crate::ui::hud::Hud;
 use crate::ui::util::text;
 use crate::world::bullet::Bullet;
@@ -10,7 +11,7 @@ use bevy::prelude::*;
 #[derive(Component, Default)]
 pub struct DebugText;
 
-pub fn spawn_debug_panel(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_debug_panel(mut commands: Commands, font: Res<GlobalFont>) {
     commands
         .spawn((
             Hud,
@@ -36,7 +37,7 @@ pub fn spawn_debug_panel(mut commands: Commands, asset_server: Res<AssetServer>)
                     BackgroundColor::from(Color::BLACK.with_alpha(0.9)),
                 ))
                 .with_children(|parent| {
-                    parent.spawn((text(&asset_server, "", 40.0), DebugText));
+                    parent.spawn((text(font.handle.clone(), "", 40.0), DebugText));
                 });
         });
 }

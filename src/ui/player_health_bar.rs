@@ -1,4 +1,4 @@
-use crate::resource::GlobalTextureAtlas;
+use crate::resource::GlobalSpriteSheet;
 use crate::ui::bar::*;
 use crate::world::damage::Health;
 use crate::world::player::Player;
@@ -20,7 +20,7 @@ pub fn update_player_health_bar(
     }
 }
 
-pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<GlobalTextureAtlas>) {
+pub fn spawn_player_health_bar(mut commands: Commands, sheet: Res<GlobalSpriteSheet>) {
     let slicer = TextureSlicer {
         border: BorderRect::square(2.0),
         center_scale_mode: SliceScaleMode::Stretch,
@@ -39,10 +39,6 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
             },
         ))
         .with_children(|parent| {
-            let outer_bar_atlas = TextureAtlas {
-                layout: texture_atlas.layout.clone().unwrap(),
-                index: 62,
-            };
             parent
                 .spawn((
                     Node {
@@ -51,36 +47,29 @@ pub fn spawn_player_health_bar(mut commands: Commands, texture_atlas: Res<Global
                         height: Val::Px(40.0),
                         ..default()
                     },
-                    ImageNode::from_atlas_image(
-                        texture_atlas.image.clone().unwrap(),
-                        outer_bar_atlas,
-                    )
-                    .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                    sheet
+                        .0
+                        .to_image_node(62)
+                        .with_mode(NodeImageMode::Sliced(slicer.clone())),
                 ))
                 .with_children(|parent| {
-                    let inner_bar_atlas = TextureAtlas {
-                        layout: texture_atlas.layout.clone().unwrap(),
-                        index: 63,
-                    };
                     parent
                         .spawn((
-                            ImageNode::from_atlas_image(
-                                texture_atlas.image.clone().unwrap(),
-                                inner_bar_atlas.clone(),
-                            )
-                            .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
-                            .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                            sheet
+                                .0
+                                .to_image_node(63)
+                                .with_color(Color::srgb(0.8, 0.2, 0.2).with_alpha(0.6))
+                                .with_mode(NodeImageMode::Sliced(slicer.clone())),
                             BarWidth::new(PLAYER_HEALTH_BAR_WIDTH),
                             BarTargetWidth::Background(1.0),
                             PlayerHealthBar,
                         ))
                         .with_children(|parent| {
                             parent.spawn((
-                                ImageNode::from_atlas_image(
-                                    texture_atlas.image.clone().unwrap(),
-                                    inner_bar_atlas,
-                                )
-                                .with_mode(NodeImageMode::Sliced(slicer.clone())),
+                                sheet
+                                    .0
+                                    .to_image_node(63)
+                                    .with_mode(NodeImageMode::Sliced(slicer.clone())),
                                 BarWidth::new(PLAYER_HEALTH_BAR_WIDTH),
                                 BarTargetWidth::Foreground(1.0),
                                 PlayerHealthBar,

@@ -6,6 +6,7 @@ use crate::world::collision::*;
 use crate::world::damage::Health;
 use crate::world::despawn::*;
 use crate::world::gun::Gun;
+use crate::world::map::spawn_map;
 use crate::world::owner::Owner;
 use crate::world::player::Player;
 use bevy::prelude::*;
@@ -20,18 +21,21 @@ pub struct InGamePlugin;
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PostUpdate, despawn_recursive::<PostDespawn>)
-            .add_systems(OnEnter(GameState::GameInit), setup_world)
+            .add_systems(OnEnter(GameState::GameInit), (setup_world, spawn_map))
             .add_systems(OnEnter(GameState::Running), enable_rigid_bodies)
             .add_systems(OnExit(GameState::Running), disable_rigid_bodies)
             .add_systems(OnExit(AppState::InGame), despawn_recursive::<InGameScoped>)
-            .add_systems(OnExit(GameState::GameOver), despawn_recursive::<InGameScoped>)
+            .add_systems(
+                OnExit(GameState::GameOver),
+                despawn_recursive::<InGameScoped>,
+            )
             .add_systems(Update, check_game_over.run_if(in_state(GameState::Running)));
     }
 }
 
 fn setup_world(
     mut commands: Commands,
-    texture_atlas: Res<GlobalTextureAtlas>,
+    texture_atlas: Res<GlobalSpriteSheet>,
     mut next_state: ResMut<NextState<GameState>>,
     config: Res<GameConfig>,
 ) {
@@ -40,13 +44,13 @@ fn setup_world(
         Gun::new(&texture_atlas, &config),
         Owner(player_commands.id()),
     ));
-    spawn_world_decorations(&mut commands, &texture_atlas, &config);
+    // spawn_world_decorations(&mut commands, &texture_atlas, &config);
     next_state.set(GameState::Running);
 }
 
 fn spawn_world_decorations(
     commands: &mut Commands,
-    texture_atlas: &Res<GlobalTextureAtlas>,
+    sheet: &Res<GlobalSpriteSheet>,
     config: &Res<GameConfig>,
 ) {
     let mut rng = rand::thread_rng();
@@ -56,13 +60,7 @@ fn spawn_world_decorations(
         let sprite_index = rng.gen_range(24..=25);
         commands.spawn((
             InGameScoped,
-            Sprite::from_atlas_image(
-                texture_atlas.image.clone().unwrap(),
-                TextureAtlas {
-                    layout: texture_atlas.layout.clone().unwrap(),
-                    index: sprite_index,
-                },
-            ),
+            sheet.0.to_sprite(sprite_index),
             Transform::from_xyz(x, y, SpriteOrder::GRASS.z_index()),
         ));
     }

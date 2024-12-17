@@ -42,7 +42,7 @@ fn main() {
         .add_sub_state::<GameState>()
         .enable_state_scoped_entities::<AppState>()
         .enable_state_scoped_entities::<GameState>()
-        .add_systems(Startup, setup_gizmos_config)
+        .add_systems(Startup, configure_gizmos)
         .run();
 }
 
@@ -69,7 +69,7 @@ fn configured_physics_plugins(tile_size: f32) -> impl PluginGroup {
         .set(PhysicsInterpolationPlugin::interpolate_translation_all())
 }
 
-fn setup_gizmos_config(config: Res<GameConfig>, mut config_store: ResMut<GizmoConfigStore>) {
+fn configure_gizmos(config: Res<GameConfig>, mut config_store: ResMut<GizmoConfigStore>) {
     let (gizmos_config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     gizmos_config.enabled = config.basic.debug;
 }

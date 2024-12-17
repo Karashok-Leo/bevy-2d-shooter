@@ -13,7 +13,7 @@ impl Plugin for PopupPlugin {
 }
 
 pub fn popup_text(
-    asset_server: &Res<AssetServer>,
+    font: Handle<Font>,
     text: String,
     transform: Transform,
     text_color: TextColor,
@@ -33,7 +33,7 @@ pub fn popup_text(
         Text2d(text),
         text_color,
         TextFont {
-            font: asset_server.load("monogram.ttf"),
+            font,
             font_size: 20.0,
             ..default()
         },
@@ -53,10 +53,10 @@ pub fn pop_tween(
             start: transform.translation,
             end: transform.translation
                 + Vec3::new(
-                rng.gen_range(-5.0..5.0),
-                rng.gen_range(-5.0..5.0) + 15.0,
-                0.0,
-            ),
+                    rng.gen_range(-5.0..5.0),
+                    rng.gen_range(-5.0..5.0) + 15.0,
+                    0.0,
+                ),
         },
     );
     let scale = Tween::new(
@@ -91,7 +91,7 @@ pub fn fade_tween(
             end: text_color.0.with_alpha(0.0),
         },
     )
-        .with_completed_event(FADE_DATA);
+    .with_completed_event(FADE_DATA);
     Animator::new(Delay::new(delay).then(fade))
 }
 

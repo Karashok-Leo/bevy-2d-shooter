@@ -25,20 +25,14 @@ impl GunTimer {
 }
 
 impl Gun {
-    pub fn new(texture_atlas: &Res<GlobalTextureAtlas>, config: &Res<GameConfig>) -> impl Bundle {
+    pub fn new(sheet: &Res<GlobalSpriteSheet>, config: &Res<GameConfig>) -> impl Bundle {
         (
             Gun,
             GunTimer::new(Duration::from_secs_f32(config.bullet.spawn_interval)),
             Transform::from_xyz(0.0, -4.0, SpriteOrder::Gun.z_index()),
             Sprite {
                 anchor: Anchor::Custom(Vec2::new(-6.0 / 16.0, 0.0)),
-                ..Sprite::from_atlas_image(
-                    texture_atlas.image.clone().unwrap(),
-                    TextureAtlas {
-                        layout: texture_atlas.layout.clone().unwrap(),
-                        index: 17,
-                    },
-                )
+                ..sheet.0.to_sprite(17)
             },
         )
     }
@@ -69,7 +63,7 @@ fn update_gun_rotation(
 
 fn on_shoot(
     mut commands: Commands,
-    texture_atlas: Res<GlobalTextureAtlas>,
+    texture_atlas: Res<GlobalSpriteSheet>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     mut gun_query: Query<(&Owner, &GlobalTransform, &mut GunTimer), With<Gun>>,
     time: Res<Time>,

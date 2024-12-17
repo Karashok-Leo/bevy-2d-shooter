@@ -1,6 +1,6 @@
 use crate::animation::*;
 use crate::config::GameConfig;
-use crate::resource::GlobalTextureAtlas;
+use crate::resource::GlobalSpriteSheet;
 use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::collision::CollisionLayer;
@@ -32,7 +32,7 @@ pub struct EnemyPlugin;
 impl Enemy {
     const SPRITE_INDEXES: [i32; 4] = [8, 12, 20, 28];
     pub fn new(
-        texture_atlas: &Res<GlobalTextureAtlas>,
+        sheet: &Res<GlobalSpriteSheet>,
         config: &Res<GameConfig>,
         player_pos: Vec2,
     ) -> impl Bundle {
@@ -54,13 +54,7 @@ impl Enemy {
                 [CollisionLayer::Enemy],
                 [CollisionLayer::Player, CollisionLayer::Bullet],
             ),
-            Sprite::from_atlas_image(
-                texture_atlas.image.clone().unwrap(),
-                TextureAtlas {
-                    layout: texture_atlas.layout.clone().unwrap(),
-                    index: animation_indices.first,
-                },
-            ),
+            sheet.0.to_sprite(animation_indices.first),
             animation_indices,
             AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         )
@@ -126,7 +120,7 @@ fn update_facing(
 
 fn spawn_dummy(
     mut commands: Commands,
-    texture_atlas: Res<GlobalTextureAtlas>,
+    texture_atlas: Res<GlobalSpriteSheet>,
     player_query: Query<&Transform, With<Player>>,
     config: Res<GameConfig>,
 ) {
@@ -152,7 +146,7 @@ fn spawn_dummy(
 
 fn spawn_enemies(
     mut commands: Commands,
-    texture_atlas: Res<GlobalTextureAtlas>,
+    texture_atlas: Res<GlobalSpriteSheet>,
     player_query: Query<&Transform, With<Player>>,
     enemy_query: Query<&Transform, (With<Enemy>, Without<Player>)>,
     config: Res<GameConfig>,

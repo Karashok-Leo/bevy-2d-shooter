@@ -20,7 +20,7 @@ pub struct Player;
 pub struct PlayerPlugin;
 
 impl Player {
-    pub fn new(texture_atlas: &Res<GlobalTextureAtlas>, config: &Res<GameConfig>) -> impl Bundle {
+    pub fn new(sheet: &Res<GlobalSpriteSheet>, config: &Res<GameConfig>) -> impl Bundle {
         let animation_indices = AnimationIndices::from_length(0, 4);
         (
             Player,
@@ -33,13 +33,7 @@ impl Player {
             Collider::rectangle(config.player.collider_size, config.player.collider_size),
             CollisionLayers::new([CollisionLayer::Player], [CollisionLayer::Enemy]),
             Dominance(5),
-            Sprite::from_atlas_image(
-                texture_atlas.image.clone().unwrap(),
-                TextureAtlas {
-                    layout: texture_atlas.layout.clone().unwrap(),
-                    index: animation_indices.first,
-                },
-            ),
+            sheet.0.to_sprite(animation_indices.first),
             animation_indices,
             AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         )

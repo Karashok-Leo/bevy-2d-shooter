@@ -8,7 +8,6 @@ use std::path::Path;
 #[derive(Resource, Default, Debug, Serialize, Deserialize)]
 pub struct GameConfig {
     pub basic: BasicConfig,
-    pub sprite: SpriteConfig,
     pub world: WorldConfig,
     pub player: PlayerConfig,
     pub enemy: EnemyConfig,
@@ -21,15 +20,6 @@ pub struct BasicConfig {
     pub window_width: f32,
     pub window_height: f32,
     pub debug: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SpriteConfig {
-    pub sprite_sheet_path: String,
-    pub sprite_sheet_width: u32,
-    pub sprite_sheet_height: u32,
-    pub tile_w: u32,
-    pub tile_h: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -114,18 +104,6 @@ impl Default for BasicConfig {
             window_width: 1280.0,
             window_height: 720.0,
             debug: false,
-        }
-    }
-}
-
-impl Default for SpriteConfig {
-    fn default() -> Self {
-        Self {
-            sprite_sheet_path: "sprites.png".to_string(),
-            sprite_sheet_width: 8,
-            sprite_sheet_height: 8,
-            tile_w: 16,
-            tile_h: 16,
         }
     }
 }

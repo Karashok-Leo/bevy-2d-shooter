@@ -1,5 +1,5 @@
 use crate::config::GameConfig;
-use crate::resource::GlobalTextureAtlas;
+use crate::resource::GlobalSpriteSheet;
 use crate::sprite_order::SpriteOrder;
 use crate::state::GameState;
 use crate::world::collision::*;
@@ -38,7 +38,7 @@ pub struct BulletPlugin;
 
 impl Bullet {
     pub fn new(
-        texture_atlas: &Res<GlobalTextureAtlas>,
+        sheet: &Res<GlobalSpriteSheet>,
         config: &Res<GameConfig>,
         gun_dir: Vec2,
         gun_pos: Vec2,
@@ -54,13 +54,7 @@ impl Bullet {
             Collider::rectangle(2.0, 2.0),
             Sensor,
             CollisionLayers::new([CollisionLayer::Bullet], [CollisionLayer::Enemy]),
-            Sprite::from_atlas_image(
-                texture_atlas.image.clone().unwrap(),
-                TextureAtlas {
-                    layout: texture_atlas.layout.clone().unwrap(),
-                    index: 16,
-                },
-            ),
+            sheet.0.to_sprite(16),
         )
     }
 }

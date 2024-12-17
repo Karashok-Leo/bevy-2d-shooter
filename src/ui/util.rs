@@ -33,15 +33,11 @@ pub fn button() -> impl Bundle {
     )
 }
 
-pub fn text(
-    asset_server: &Res<AssetServer>,
-    str: impl Into<String>,
-    font_size: f32,
-) -> impl Bundle {
+pub fn text(font: Handle<Font>, str: impl Into<String>, font_size: f32) -> impl Bundle {
     (
         Text::new(str),
         TextFont {
-            font: asset_server.load("monogram.ttf"),
+            font,
             font_size,
             ..default()
         },
@@ -49,15 +45,11 @@ pub fn text(
     )
 }
 
-pub fn text_bg(
-    asset_server: &Res<AssetServer>,
-    str: impl Into<String>,
-    font_size: f32,
-) -> impl Bundle {
+pub fn text_bg(font: Handle<Font>, str: impl Into<String>, font_size: f32) -> impl Bundle {
     (
         Text::new(str),
         TextFont {
-            font: asset_server.load("monogram.ttf"),
+            font,
             font_size,
             ..default()
         },

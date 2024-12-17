@@ -1,3 +1,4 @@
+use crate::resource::GlobalFont;
 use crate::state::{AppState, GameState};
 use crate::ui::util::*;
 use bevy::prelude::*;
@@ -11,11 +12,11 @@ pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::MainMenu), setup_main_menu);
+        app.add_systems(OnEnter(AppState::MainMenu), spawn_main_menu);
     }
 }
 
-fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_main_menu(mut commands: Commands, font: Res<GlobalFont>) {
     commands
         .spawn((
             MainMenu,
@@ -37,7 +38,7 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                 })
                 .with_children(|parent| {
                     parent.spawn((
-                        text(&asset_server, "2D Shooter", 100.0),
+                        text(font.handle.clone(), "2D Shooter", 100.0),
                         Node {
                             margin: UiRect::all(Val::Px(50.0)),
                             align_items: AlignItems::Center,
@@ -56,11 +57,11 @@ fn setup_main_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent
                         .spawn((button(), button_node.clone()))
                         .observe(on_start)
-                        .with_child(text(&asset_server, "Play", 50.0));
+                        .with_child(text(font.handle.clone(), "Play", 50.0));
                     parent
                         .spawn((button(), button_node.clone()))
                         .observe(on_quit)
-                        .with_child(text(&asset_server, "Quit", 50.0));
+                        .with_child(text(font.handle.clone(), "Quit", 50.0));
                 });
         });
 }

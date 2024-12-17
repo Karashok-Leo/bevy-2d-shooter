@@ -1,9 +1,10 @@
+use crate::resource::GlobalFont;
 use crate::state::GameState;
 use crate::ui::main_menu::back_to_main_menu;
 use crate::ui::util::{button, text};
+use crate::world::in_game::InGameScoped;
 use bevy::prelude::*;
 use bevy_button_released_plugin::OnButtonReleased;
-use crate::world::in_game::InGameScoped;
 
 #[derive(Default)]
 pub struct PausePlugin;
@@ -46,7 +47,7 @@ fn button_continue(
     next_state.set(GameState::Running);
 }
 
-fn spawn_pause(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_pause(mut commands: Commands, font: Res<GlobalFont>) {
     commands
         .spawn((
             InGameScoped,
@@ -69,7 +70,7 @@ fn spawn_pause(mut commands: Commands, asset_server: Res<AssetServer>) {
                 })
                 .with_children(|parent| {
                     parent.spawn((
-                        text(&asset_server, "Game Paused", 100.0),
+                        text(font.handle.clone(), "Game Paused", 100.0),
                         Node {
                             margin: UiRect::all(Val::Px(50.0)),
                             ..default()
@@ -86,11 +87,11 @@ fn spawn_pause(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent
                         .spawn((button(), button_node.clone()))
                         .observe(button_continue)
-                        .with_child(text(&asset_server, "Continue", 50.0));
+                        .with_child(text(font.handle.clone(), "Continue", 50.0));
                     parent
                         .spawn((button(), button_node.clone()))
                         .observe(back_to_main_menu)
-                        .with_child(text(&asset_server, "Back", 50.0));
+                        .with_child(text(font.handle.clone(), "Back", 50.0));
                 });
         });
 }

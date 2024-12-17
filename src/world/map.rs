@@ -1,13 +1,13 @@
 use crate::config::GameConfig;
+use crate::resource::TileSet;
 use crate::sprite_order::SpriteOrder;
 use bevy::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
-fn startup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<GameConfig>) {
-    let texture_handle: Handle<Image> = asset_server.load("tiles.png");
+pub fn spawn_map(mut commands: Commands, sheet: Res<TileSet>, config: Res<GameConfig>) {
     let tile_size = config.basic.tile_size;
 
-    let map_size = TilemapSize { x: 320, y: 320 };
+    let map_size = TilemapSize { x: 32, y: 32 };
 
     let mut parent_commands = commands.spawn_empty();
     let map_parent_entity = parent_commands.id();
@@ -21,7 +21,7 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<G
                 .with_child(TileBundle {
                     position: tile_pos,
                     tilemap_id: TilemapId(map_parent_entity),
-                    // texture_index:
+                    texture_index: TileTextureIndex(0),
                     ..Default::default()
                 })
                 .id();
@@ -38,7 +38,7 @@ fn startup(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<G
         map_type,
         size: map_size,
         storage: tile_storage,
-        texture: TilemapTexture::Single(texture_handle),
+        texture: TilemapTexture::Single(sheet.0.image.clone()),
         tile_size: map_tile_size,
         transform: get_tilemap_center_transform(
             &map_size,

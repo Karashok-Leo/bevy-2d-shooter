@@ -7,13 +7,14 @@ Some of the code was learned from [another project](https://github.com/bones-ai/
 ## What's the difference?
 - Better code organization
 - Handle physical movement in Fixed Update
-- Complete game lifecycle - main menu, game over screen
+- Complete game lifecycle - main menu, game over screen and game paused screen
 - Use bevy_button_released_plugin for better button interaction
 - Smoother movement and zooming of the camera
 - Pop texts when damaging
 - Health bar with gradual changing background
 - Game config file serialized and deserialized with serde and toml
 - Use Avian2d for better 2d physics (main-branch)
+- Use SubStates for better game state management
 - Enemy AI:
   - Follow player
   - Wander around (WIP)
