@@ -1,3 +1,4 @@
+use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -9,6 +10,7 @@ use std::path::Path;
 pub struct GameConfig {
     pub basic: BasicConfig,
     pub world: WorldConfig,
+    pub map: MapConfig,
     pub player: PlayerConfig,
     pub enemy: EnemyConfig,
     pub bullet: BulletConfig,
@@ -28,6 +30,15 @@ pub struct WorldConfig {
     pub world_width: f32,
     pub world_height: f32,
     pub background_color: (u8, u8, u8),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MapConfig {
+    pub map_w: u32,
+    pub map_h: u32,
+    pub scale: f32,
+    pub grass_height: f32,
+    pub sand_height: f32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,6 +108,19 @@ fn read_or_create_config() -> Result<GameConfig, Box<dyn Error>> {
     }
 }
 
+fn reload_config(mut commands: Commands) {
+    commands.insert_resource(get_config());
+}
+
+impl Plugin for ConfigPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            reload_config.run_if(input_just_pressed(KeyCode::KeyR)),
+        );
+    }
+}
+
 impl Default for BasicConfig {
     fn default() -> Self {
         Self {
@@ -115,6 +139,18 @@ impl Default for WorldConfig {
             world_width: 3000.0,
             world_height: 2500.0,
             background_color: (197, 204, 184),
+        }
+    }
+}
+
+impl Default for MapConfig {
+    fn default() -> Self {
+        Self {
+            map_w: 128,
+            map_h: 96,
+            scale: 30.0,
+            grass_height: 1.0,
+            sand_height: 0.2,
         }
     }
 }

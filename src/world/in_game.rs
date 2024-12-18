@@ -6,7 +6,6 @@ use crate::world::collision::*;
 use crate::world::damage::Health;
 use crate::world::despawn::*;
 use crate::world::gun::Gun;
-use crate::world::map::spawn_map;
 use crate::world::owner::Owner;
 use crate::world::player::Player;
 use bevy::prelude::*;
@@ -21,7 +20,7 @@ pub struct InGamePlugin;
 impl Plugin for InGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PostUpdate, despawn_recursive::<PostDespawn>)
-            .add_systems(OnEnter(GameState::GameInit), (setup_world, spawn_map))
+            .add_systems(OnEnter(GameState::GameInit), setup_world)
             .add_systems(OnEnter(GameState::Running), enable_rigid_bodies)
             .add_systems(OnExit(GameState::Running), disable_rigid_bodies)
             .add_systems(OnExit(AppState::InGame), despawn_recursive::<InGameScoped>)

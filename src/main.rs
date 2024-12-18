@@ -7,10 +7,10 @@ use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_2d_shooter::animation::AnimatorPlugin;
 use bevy_2d_shooter::camera::SmoothCameraPlugin;
-use bevy_2d_shooter::config::{get_config, GameConfig};
+use bevy_2d_shooter::config::*;
 use bevy_2d_shooter::input::InputHandlerPlugin;
 use bevy_2d_shooter::resource::ResourcePlugin;
-use bevy_2d_shooter::state::{AppState, GameState};
+use bevy_2d_shooter::state::*;
 use bevy_2d_shooter::ui::UIPlugins;
 use bevy_2d_shooter::world::WorldPlugins;
 
@@ -31,6 +31,7 @@ fn main() {
         .add_plugins((
             configured_default_plugins(ww, wh),
             configured_physics_plugins(tile_size),
+            ConfigPlugin,
             ResourcePlugin,
             InputHandlerPlugin,
             AnimatorPlugin,

@@ -3,6 +3,7 @@ use crate::state::GameState;
 use crate::ui::main_menu::back_to_main_menu;
 use crate::ui::util::{button, text};
 use crate::world::in_game::InGameScoped;
+use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 use bevy_button_released_plugin::OnButtonReleased;
 
@@ -16,28 +17,19 @@ impl Plugin for PausePlugin {
             (
                 esc_pause.run_if(in_state(GameState::Running)),
                 esc_continue.run_if(in_state(GameState::Paused)),
-            ),
+            )
+                .run_if(input_just_pressed(KeyCode::Escape)),
         )
         .add_systems(OnEnter(GameState::Paused), spawn_pause);
     }
 }
 
-fn esc_pause(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut next_state: ResMut<NextState<GameState>>,
-) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        next_state.set(GameState::Paused);
-    }
+fn esc_pause(mut next_state: ResMut<NextState<GameState>>) {
+    next_state.set(GameState::Paused);
 }
 
-fn esc_continue(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut next_state: ResMut<NextState<GameState>>,
-) {
-    if keyboard_input.just_pressed(KeyCode::Escape) {
-        next_state.set(GameState::Running);
-    }
+fn esc_continue(mut next_state: ResMut<NextState<GameState>>) {
+    next_state.set(GameState::Running);
 }
 
 fn button_continue(

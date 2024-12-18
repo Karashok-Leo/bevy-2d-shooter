@@ -13,6 +13,7 @@ pub mod player;
 
 plugin_group! {
     pub struct WorldPlugins{
+        map:::MapPlugin,
         player:::PlayerPlugin,
         gun:::GunPlugin,
         bullet:::BulletPlugin,
