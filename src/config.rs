@@ -8,12 +8,36 @@ use std::path::Path;
 
 #[derive(Resource, Default, Debug, Serialize, Deserialize)]
 pub struct GameConfig {
+    pub water: WaterConfig,
     pub basic: BasicConfig,
     pub world: WorldConfig,
     pub map: MapConfig,
     pub player: PlayerConfig,
     pub enemy: EnemyConfig,
     pub bullet: BulletConfig,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WaterConfig {
+    pub radial_scale: f32,
+    pub axial_scale: f32,
+    pub contrast: f32,
+    pub speed: f32,
+    pub intensity: f32,
+    pub color_offset: Vec3,
+}
+
+impl Default for WaterConfig {
+    fn default() -> Self {
+        Self {
+            radial_scale: 10.0,
+            axial_scale: 4.0,
+            contrast: 8.0,
+            speed: 0.5,
+            intensity: 0.1,
+            color_offset: Vec3::new(-0.1, 0.3, 0.9),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -57,6 +81,8 @@ pub struct EnemyConfig {
     pub damage_cooldown: f32,
     pub follow_range: f32,
     pub collider_size: f32,
+    pub spawn_dummy: bool,
+    pub spawn_waves: bool,
     pub spawn_limit: usize,
     pub spawn_rate_per_second: usize,
     pub spawn_interval: f32,
@@ -175,6 +201,8 @@ impl Default for EnemyConfig {
             damage_cooldown: 0.15,
             follow_range: 1000.0,
             collider_size: 6.0,
+            spawn_dummy: false,
+            spawn_waves: true,
             spawn_limit: 20000,
             spawn_rate_per_second: 500,
             spawn_interval: 1.0,

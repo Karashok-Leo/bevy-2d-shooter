@@ -10,10 +10,12 @@ pub mod in_game;
 pub mod map;
 pub mod owner;
 pub mod player;
+pub mod water;
 
 plugin_group! {
     pub struct WorldPlugins{
         map:::MapPlugin,
+        water:::WaterPlugin,
         player:::PlayerPlugin,
         gun:::GunPlugin,
         bullet:::BulletPlugin,

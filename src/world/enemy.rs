@@ -124,7 +124,7 @@ fn spawn_dummy(
     player_query: Query<&Transform, With<Player>>,
     config: Res<GameConfig>,
 ) {
-    if !config.basic.debug {
+    if !config.enemy.spawn_dummy {
         return;
     }
     let Ok(player_transform) = player_query.get_single() else {
@@ -151,7 +151,7 @@ fn spawn_enemies(
     enemy_query: Query<&Transform, (With<Enemy>, Without<Player>)>,
     config: Res<GameConfig>,
 ) {
-    if config.basic.debug {
+    if !config.enemy.spawn_waves {
         return;
     }
     let Ok(player_transform) = player_query.get_single() else {
