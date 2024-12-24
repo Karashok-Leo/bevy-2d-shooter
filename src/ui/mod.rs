@@ -5,6 +5,7 @@ pub mod damage_popup;
 pub mod debug_panel;
 pub mod game_over;
 pub mod hud;
+pub mod interpolate;
 pub mod main_menu;
 pub mod pause;
 pub mod player_health_bar;
@@ -15,6 +16,7 @@ plugin_group! {
     pub struct UIPlugins{
         util:::UIUtilPlugin,
         popup:::PopupPlugin,
+        interpolate:::InterpolatePlugin,
         bar:::BarPlugin,
         hud:::HudPlugin,
         main_menu:::MainMenuPlugin,

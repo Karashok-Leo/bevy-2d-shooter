@@ -1,5 +1,4 @@
 use crate::resource::GlobalFont;
-use crate::ui::hud::Hud;
 use crate::ui::popup::popup_text;
 use crate::world::damage::DamageEvent;
 use crate::world::enemy::Enemy;
@@ -17,17 +16,13 @@ pub fn on_enemy_damaged(
         }
         if let Ok(transform) = enemy_query.get_mut(event.target) {
             // pop text
-            let mut pop_transform = transform.compute_transform();
-            pop_transform.translation.z += 100.0;
-            commands.spawn((
-                Hud,
-                popup_text(
-                    font.handle.clone(),
-                    event.context.damage.to_string(),
-                    pop_transform,
-                    TextColor(Color::srgb(0.8, 0.1, 0.1)),
-                ),
-            ));
+            popup_text(
+                &mut commands,
+                font.handle.clone(),
+                event.context.damage.to_string(),
+                transform.compute_transform(),
+                TextColor(Color::srgb(0.8, 0.1, 0.1)),
+            );
         }
     }
 }
